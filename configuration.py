@@ -11,7 +11,6 @@ TOKEN_SCOPE_NURSE = 'NURSE'
 TOKEN_SCOPE_JR_DOCTOR = 'JR_DOCTOR'
 TOKEN_SCOPE_SR_DOCTOR = 'SR_DOCTOR'
 
-
 ############################################ Static Values End ############################################
 
 
@@ -31,7 +30,10 @@ DB_HOST = "localhost"
 DB_PORT = 27017
 DB_NAME = "SSI_Detection_Database"
 COLLECTION_PATIENT_ADMINISTRATION_DETAILS = 'Patient_Administration_Details'
-
+COLLECTION_MICROBIOLOGY_DETAILS = 'Microbiology_Details'
+COLLECTION_ANTIBIOTIC_SURVEILLANCE_DETAILS = 'Antibiotic_Surveillance'
+COLLECTION_POST_SURGERY_DETAILS = 'Post_Surgery_Details'
+COLLECTION_SSI_EVALUATION_DETAILS ='SSI_Evaluation_Details'
 
 
 def db_conn():
