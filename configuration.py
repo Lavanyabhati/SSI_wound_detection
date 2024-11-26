@@ -29,11 +29,14 @@ log.setLevel(logging.INFO)
 DB_HOST = "localhost"
 DB_PORT = 27017
 DB_NAME = "SSI_Detection_Database"
+COLLECTION_OTP = 'OTP'
+COLLECTION_NURSE = 'Nurse'
 COLLECTION_PATIENT_ADMINISTRATION_DETAILS = 'Patient_Administration_Details'
 COLLECTION_MICROBIOLOGY_DETAILS = 'Microbiology_Details'
 COLLECTION_ANTIBIOTIC_SURVEILLANCE_DETAILS = 'Antibiotic_Surveillance'
 COLLECTION_POST_SURGERY_DETAILS = 'Post_Surgery_Details'
 COLLECTION_SSI_EVALUATION_DETAILS ='SSI_Evaluation_Details'
+COLLECTION_EVENT_DETAILS = 'Event_Details'
 
 
 def db_conn():

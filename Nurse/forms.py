@@ -18,14 +18,22 @@ SSI_EVENT_CHOICES = [
     ('no', 'No')
 ]
 
-EVENT_DETECTED_CHOICES = [
-    ('A', 'During admission'),
-    ('P', 'Post-discharge surveillance'),
-    ('RF', 'Readmission to facility where procedure performed')
+DETECTED_CHOICES = [
+    ('A', 'A (During admission)'),
+    ('P', 'P (Post-discharge surveillance)'),
+    ('RF', 'RF (Readmission to facility where procedure performed)'),
+]
+
+SPECIFIC_EVENT_CHOICES = [
+    ('SIP', 'Superficial Incisional Primary (SIP)'),
+    ('SIS', 'Superficial Incisional Secondary (SIS)'),
+    ('DIP', 'Deep Incisional Primary (DIP)'),
+    ('DIS', 'Deep Incisional Secondary (DIS)'),
+    ('OS', 'Organ/Space (specify site)'),
 ]
 
 MICROORGANISM_CHOICES = [
-    ('E. coli', 'E. coli'),
+    ('E coli', 'E coli'),
     ('Klebsiella pneumoniae', 'Klebsiella pneumoniae'),
     ('Enterococcus faecium', 'Enterococcus faecium'),
     ('Enterococcus faecalis', 'Enterococcus faecalis'),
@@ -50,6 +58,7 @@ ANTIBIOTIC_CHOICES = [
     ('Amikacin', 'Amikacin'),
     ('Aztreonam', 'Aztreonam'),
     ('Cefepime', 'Cefepime'),
+    ('Cefuroxime', 'Cefuroxime'),
     ('Ceftazidime', 'Ceftazidime'),
     ('Ceftriaxone', 'Ceftriaxone'),
     ('Netilmicin', 'Netilmicin'),
@@ -58,7 +67,7 @@ ANTIBIOTIC_CHOICES = [
     ('Levofloxacin', 'Levofloxacin'),
     ('Norfloxacin', 'Norfloxacin'),
     ('Ciprofloxacin', 'Ciprofloxacin'),
-    ('Cefoperazone/Sulbactum', 'Cefoperazone/Sulbactum'),
+    ('Cefoperazone', 'Cefoperazone'),
     ('Ticarcillin/Clavulanic acid', 'Ticarcillin/Clavulanic acid'),
     ('Piperacillin-tazobactum', 'Piperacillin-tazobactum'),
     ('Ceftazidime/Avibactam', 'Ceftazidime/Avibactam'),
@@ -337,7 +346,8 @@ INTERPRETATION_CHOICES = [
     ('', 'Select Interpretation'),
     ('Sensitive', 'Sensitive'),
     ('Resistant', 'Resistant'),
-    ('Intermediate', 'Intermediate')
+    ('Intermediate', 'Intermediate'),
+    ('Susceptibility_Dose_Dependent', 'Susceptibility_Dose_Dependent')
 ]
 
 DAY_OPTIONS = [
@@ -367,10 +377,58 @@ YES_NO_EMPTY_CHOICES = [
     ("No", "No"),
 ]
 
+SAMPLE_TYPE_CHOICES = [
+    ('pus_swab', 'Pus Swab'),
+    ('pus', 'Pus'),
+    ('tissue', 'Tissue'),
+    ('drain_fluid', 'Drain Fluid'),
+    ('ascitic_fluid', 'Ascitic Fluid'),
+    ('bile_fluid', 'Bile Fluid'),
+    ('others', 'Others'),
+]
+
+SAMPLE_COLLECTION_SITE_CHOICES = [
+    ('lscs', 'LSCS'),
+    ('abdomen', 'Abdomen'),
+    ('laparotomy', 'Laparotomy'),
+    ('upper_limbs', 'Upper Limbs'),
+    ('lower_limbs', 'Lower Limbs'),
+    ('chest_sternal_wound', 'Chest/Sternal Wound'),
+    ('peri_hepatic_collection', 'Peri Hepatic Collection'),
+    ('ileostomy', 'Ileostomy'),
+    ('kidney', 'Kidney'),
+    ('spine', 'Spine'),
+    ('neck', 'Neck'),
+    ('liver', 'Liver'),
+    ('gallbladder', 'Gallbladder'),
+    ('appendix', 'Appendix'),
+    ('head', 'Head'),
+    ('breast', 'Breast'),
+    ('pigtail', 'Pigtail'),
+    ('craniotomy', 'Craniotomy '),
+    ('others', 'Others'),
+]
+
+
+class NurseForm(forms.Form):
+    name = forms.CharField(max_length=100, label="Employee Name", required=True)
+    email = forms.EmailField(max_length=100, label="Employee Name", required=True)
+    gender = forms.ChoiceField(choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')], label="Employee Name", required=True)
+    department = forms.ChoiceField(choices=DEPARTMENT_CHOICES,label="Employee Department", required=True)
+    phone_number = forms.CharField(max_length=10, required=True, label="Phone Number")
+    date_of_birth = forms.DateField(required=True, widget=forms.DateInput(attrs={'type': 'date'}), label="Date of Birth")
+
+
+class NurseUpdateForm(forms.Form):
+    name = forms.CharField(max_length=100, label="Employee Name", required=True)
+    email = forms.EmailField(max_length=100, label="Employee Name", required=True)
+    gender = forms.ChoiceField(choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')], label="Employee Name", required=True)
+    department = forms.ChoiceField(choices=DEPARTMENT_CHOICES,label="Employee Department", required=True)
+    date_of_birth = forms.DateField(required=True, widget=forms.DateInput(attrs={'type': 'date'}), label="Date of Birth")
+
 
 class PatientAdministrationForm(forms.Form):
     patientName = forms.CharField(max_length=100, label="Patient Name", required=True)
-    patientID = forms.CharField(max_length=100, label="Patient ID", required=True)
     age = forms.IntegerField(label="Age", required=True)
     gender = forms.ChoiceField(choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')], required=True,
                                label="Gender")
@@ -391,18 +449,6 @@ class PatientAdministrationForm(forms.Form):
     ssiEventOccurred = forms.ChoiceField(choices=SSI_EVENT_CHOICES, label="SSI Event Occurred", required=True)
     dateOfEvent = forms.DateField(label="If Yes, Date of Event", widget=forms.SelectDateWidget(), required=True)
 
-
-    # # Event Details
-    # specific_event_sip = forms.BooleanField(required=False, label="Superficial Incisional Primary (SIP)")
-    # specific_event_sis = forms.BooleanField(required=False, label="Superficial Incisional Secondary (SIS)")
-    # specific_event_dip = forms.BooleanField(required=False, label="Deep Incisional Primary (DIP)")
-    # specific_event_dis = forms.BooleanField(required=False, label="Deep Incisional Secondary (DIS)")
-    # organ_space = forms.CharField(max_length=200, label="Organ/Space (specify site)", required=False)
-    #
-    # detected = forms.MultipleChoiceField(choices=EVENT_DETECTED_CHOICES, label="Detected",
-    #                                      widget=forms.CheckboxSelectMultiple)
-    # death_by_BSI = forms.ChoiceField(choices=[('yes', 'Yes'), ('no', 'No')], label="Secondary BSI contributed to Death")
-    #
 
 class MicrobiologyForm(forms.Form):
     micro_organism = forms.ChoiceField(
@@ -428,8 +474,8 @@ class MicrobiologyForm(forms.Form):
             widget=forms.Select(attrs={'class': 'form-control'})
         )
 
+
 class AntibioticSurveillanceForm(forms.Form):
-    # Antibiotics prior to operation
     antibiotic_prior_1 = forms.ChoiceField(label='Antibiotic 1', choices=ANTIBIOTIC_CHOICES, required=False)
     route_prior_1 = forms.ChoiceField(label='Route of Administration', choices=ROUTE_CHOICES, required=False)
     duration_prior_1 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
@@ -445,7 +491,6 @@ class AntibioticSurveillanceForm(forms.Form):
     duration_prior_3 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
     doses_prior_3 = forms.ChoiceField(label='Number of doses', choices=DOSE_CHOICES, required=False)
 
-    # Antibiotics given pre/perioperatively
     antibiotic_pre_1 = forms.ChoiceField(label='Antibiotic 1 (Pre/Perioperative)', choices=ANTIBIOTIC_CHOICES, required=False)
     route_pre_1 = forms.ChoiceField(label='Route of Administration', choices=ROUTE_CHOICES, required=False)
     duration_pre_1 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
@@ -461,7 +506,6 @@ class AntibioticSurveillanceForm(forms.Form):
     duration_pre_3 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
     doses_pre_3 = forms.ChoiceField(label='Number of doses', choices=DOSE_CHOICES, required=False)
 
-    # Antibiotics given after peri-operative prophylaxis
     antibiotic_post_1 = forms.ChoiceField(label='Antibiotic 1 (Post-operative)', choices=ANTIBIOTIC_CHOICES, required=False)
     route_post_1 = forms.ChoiceField(label='Route of Administration', choices=ROUTE_CHOICES, required=False)
     duration_post_1 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
@@ -492,7 +536,6 @@ class AntibioticSurveillanceForm(forms.Form):
     duration_post_6 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
     doses_post_6 = forms.ChoiceField(label='Number of doses', choices=DOSE_CHOICES, required=False)
 
-    # Time of induction, incision, and surgery end
     time_induction = forms.TimeField(label='Time of Induction', required=False, widget=forms.TimeInput(format='%H:%M'))
     time_incision = forms.TimeField(label='Time of Incision', required=False, widget=forms.TimeInput(format='%H:%M'))
     time_end_surgery = forms.TimeField(label='End Time of Surgery', required=False, widget=forms.TimeInput(format='%H:%M'))
@@ -532,234 +575,14 @@ class PostOpDayForm(forms.Form):
 
     any_other = forms.CharField(label=_("Any other (specify below)"), required=False, widget=forms.Textarea(attrs={"placeholder": "Additional details"}))
 
-# class SSIEvaluationForm(forms.Form):
-#
-#     procedure_name = forms.ChoiceField(choices=PROCEDURE_NAME_CHOICES, widget=forms.Select(attrs={'class': 'form-control'}))
-#     patient_id = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'class': 'form-control'}))
-#     patient_name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
-#     age = forms.IntegerField(widget=forms.NumberInput(attrs={'class': 'form-control'}))
-#     gender = forms.ChoiceField(choices=[('Male', 'Male'), ('Female', 'Female')], widget=forms.Select(attrs={'class': 'form-control'}))
-#     date_of_procedure = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
-#
-#     def _create_yes_no_remark_fields(label):
-#         return [
-#             forms.ChoiceField(choices=[('Yes', 'Yes'), ('No', 'No')], widget=forms.RadioSelect, label=label),
-#             forms.CharField(max_length=100, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Remarks'}), label='')
-#         ]
-#
-#     antimicrobial_prophylaxis_guidelines, antimicrobial_prophylaxis_guidelines_remarks = _create_yes_no_remark_fields("Administer antimicrobial prophylaxis as per guidelines")
-#     prophylaxis_within_1_hour, prophylaxis_within_1_hour_remarks = _create_yes_no_remark_fields("Administer antimicrobial prophylaxis within 1 hour of incision")
-#     antimicrobial_prophylaxis_surgical_procedure, antimicrobial_prophylaxis_surgical_procedure_remarks = _create_yes_no_remark_fields("Select antimicrobial agents based on procedure")
-#     ssi_pathogens_prophylaxis, ssi_pathogens_prophylaxis_remarks = _create_yes_no_remark_fields("Select agents for most common SSI pathogens")
-#     published_recommendations_prophylaxis, published_recommendations_prophylaxis_remarks = _create_yes_no_remark_fields("Select agents based on published recommendations")
-#     discontinue_antibiotics_24_hours, discontinue_antibiotics_24_hours_remarks = _create_yes_no_remark_fields("Discontinue antibiotics within 24 hours after surgery")
-#     redose_3_hour_interval, redose_3_hour_interval_remarks = _create_yes_no_remark_fields("Redose antibiotics for procedures lasting >3 hours")
-#     adjust_for_bmi, adjust_for_bmi_remarks = _create_yes_no_remark_fields("Adjust prophylaxis dose for BMI > 30")
-#     no_hair_removal, no_hair_removal_remarks = _create_yes_no_remark_fields("Avoid hair removal unless necessary")
-#     razors_not_used, razors_not_used_remarks = _create_yes_no_remark_fields("Razors not used for hair removal")
-#     clippers_used, clippers_used_remarks = _create_yes_no_remark_fields("Use clippers or depilatory agents")
-#     antiseptic_agent_preparation, antiseptic_agent_preparation_remarks = _create_yes_no_remark_fields("Use appropriate antiseptic agent for skin preparation")
-#     mechanical_colon_preparation, mechanical_colon_preparation_remarks = _create_yes_no_remark_fields("Mechanically prepare the colon")
-#     administer_oral_antimicrobial, administer_oral_antimicrobial_remarks = _create_yes_no_remark_fields("Administer oral antimicrobial agents prior to surgery")
-#     keep_doors_closed, keep_doors_closed_remarks = _create_yes_no_remark_fields("Keep operating room doors closed during surgery")
-#     maintain_normothermia, maintain_normothermia_remarks = _create_yes_no_remark_fields("Maintain immediate post-op normothermia")
-#     protect_primary_closure, protect_primary_closure_remarks = _create_yes_no_remark_fields("Protect primary closure incisions with sterile dressing for 24-48 hours")
-#     blood_glucose_control_post_op, blood_glucose_control_post_op_remarks = _create_yes_no_remark_fields("Control blood glucose level during the immediate post-operative period in cardiac procedures")
-#     measure_glucose_at_6am, measure_glucose_at_6am_remarks = _create_yes_no_remark_fields("Measure blood glucose level at 6AM on POD#1 and #2 (cardiac procedures)")
-#     glucose_level_under_200, glucose_level_under_200_remarks = _create_yes_no_remark_fields("Maintain post-operative blood glucose levels < 200 mg/dL in cardiac procedures")
-#     screen_preop_glucose, screen_preop_glucose_remarks = _create_yes_no_remark_fields("Screen pre-op blood glucose levels in elective procedures")
-#     tight_glucose_control, tight_glucose_control_remarks = _create_yes_no_remark_fields("Maintain tight glucose control on POD#1 and POD#2 for elective procedures")
-#     nasal_screen_cabg, nasal_screen_cabg_remarks = _create_yes_no_remark_fields("Nasal screen and decolonize S. aureus carriers for CABG procedures")
-#     nasal_screen_elective, nasal_screen_elective_remarks = _create_yes_no_remark_fields("Nasal screen and decolonize S. aureus carriers for other elective procedures")
-#     increased_oxygen_use, increased_oxygen_use_remarks = _create_yes_no_remark_fields("Use increased fraction of inspired oxygen during and post-op")
-#     postpone_until_infection_resolves, postpone_until_infection_resolves_remarks = _create_yes_no_remark_fields("Postpone operation until remote infection resolves")
-#
-
-
-# class SSIEvaluationForm(forms.Form):
-#     procedure_name = forms.ChoiceField(
-#         choices=PROCEDURE_NAME_CHOICES,
-#         widget=forms.Select(attrs={'class': 'form-control'})
-#     )
-#     patient_id = forms.CharField(
-#         max_length=50,
-#         widget=forms.TextInput(attrs={'class': 'form-control'})
-#     )
-#     patient_name = forms.CharField(
-#         max_length=100,
-#         widget=forms.TextInput(attrs={'class': 'form-control'})
-#     )
-#     age = forms.IntegerField(
-#         widget=forms.NumberInput(attrs={'class': 'form-control'})
-#     )
-#     gender = forms.ChoiceField(
-#         choices=[('Male', 'Male'), ('Female', 'Female')],
-#         widget=forms.Select(attrs={'class': 'form-control'})
-#     )
-#     date_of_procedure = forms.DateField(
-#         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
-#     )
-#
-#     # Helper method for creating fields
-#     @staticmethod
-#     def create_yes_no_remark_fields(label):
-#         return {
-#             f'{label}_choice': forms.ChoiceField(
-#                 choices=[('Yes', 'Yes'), ('No', 'No')],
-#                 widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
-#                 label=label,
-#             ),
-#             f'{label}_remarks': forms.CharField(
-#                 max_length=100,
-#                 required=False,
-#                 widget=forms.TextInput(attrs={
-#                     'class': 'form-control',
-#                     'placeholder': 'Remarks'
-#                 }),
-#                 label=f'{label} Remarks'
-#             ),
-#         }
-#
-#     # Define fields dynamically using the helper method
-#     fields = [
-#         "antimicrobial_prophylaxis_guidelines",
-#         "prophylaxis_within_1_hour",
-#         "antimicrobial_prophylaxis_surgical_procedure",
-#         "ssi_pathogens_prophylaxis",
-#         "published_recommendations_prophylaxis",
-#         "discontinue_antibiotics_24_hours",
-#         "redose_3_hour_interval",
-#         "adjust_for_bmi",
-#         "no_hair_removal",
-#         "razors_not_used",
-#         "clippers_used",
-#         "antiseptic_agent_preparation",
-#         "mechanical_colon_preparation",
-#         "administer_oral_antimicrobial",
-#         "keep_doors_closed",
-#         "maintain_normothermia",
-#         "protect_primary_closure",
-#         "blood_glucose_control_post_op",
-#         "measure_glucose_at_6am",
-#         "glucose_level_under_200",
-#         "screen_preop_glucose",
-#         "tight_glucose_control",
-#         "nasal_screen_cabg",
-#         "nasal_screen_elective",
-#         "increased_oxygen_use",
-#         "postpone_until_infection_resolves",
-#     ]
-#
-#     # Add fields dynamically to the form
-#     for field in fields:
-#         locals().update(create_yes_no_remark_fields(field))
-
-
-# class SSIEvaluationForm(forms.Form):
-#     procedure_name = forms.ChoiceField(
-#         choices=PROCEDURE_NAME_CHOICES,
-#         required=True,
-#         label="Procedure Name"
-#     )
-#     patient_id = forms.CharField(
-#         max_length=50,
-#         required=True,
-#         label="Patient ID"
-#     )
-#     patient_name = forms.CharField(
-#         max_length=100,
-#         required=True,
-#         label="Patient Name"
-#     )
-#     age = forms.IntegerField(
-#         required=True,
-#         label="Age"
-#     )
-#     gender = forms.ChoiceField(
-#         choices=[('Male', 'Male'), ('Female', 'Female')],
-#         required=True,
-#         label="Gender"
-#     )
-#     date_of_procedure = forms.DateField(
-#         required=True,
-#         label="Date of Procedure"
-#     )
-#
-#     # Helper method to generate yes/no choice fields with remarks
-#     def create_yes_no_remark_fields(self, field_name):
-#         return {
-#             f'{field_name}_choice': forms.ChoiceField(
-#                 choices=[('Yes', 'Yes'), ('No', 'No')],
-#                 required=False
-#             ),
-#             f'{field_name}_remarks': forms.CharField(
-#                 max_length=100,
-#                 required=False
-#             ),
-#         }
-#
-#     # Fields requiring dynamic yes/no and remarks
-#     fields = [
-#         "antimicrobial_prophylaxis_guidelines",
-#         "prophylaxis_within_1_hour",
-#         "antimicrobial_prophylaxis_surgical_procedure",
-#         "ssi_pathogens_prophylaxis",
-#         "published_recommendations_prophylaxis",
-#         "discontinue_antibiotics_24_hours",
-#         "redose_3_hour_interval",
-#         "adjust_for_bmi",
-#         "no_hair_removal",
-#         "razors_not_used",
-#         "clippers_used",
-#         "antiseptic_agent_preparation",
-#         "mechanical_colon_preparation",
-#         "administer_oral_antimicrobial",
-#         "keep_doors_closed",
-#         "maintain_normothermia",
-#         "protect_primary_closure",
-#         "blood_glucose_control_post_op",
-#         "measure_glucose_at_6am",
-#         "glucose_level_under_200",
-#         "screen_preop_glucose",
-#         "tight_glucose_control",
-#         "nasal_screen_cabg",
-#         "nasal_screen_elective",
-#         "increased_oxygen_use",
-#         "postpone_until_infection_resolves",
-#     ]
-#
-#     for field in fields:
-#         locals().update(create_yes_no_remark_fields(field))
 
 class SSIEvaluationForm(forms.Form):
-    procedure_name = forms.ChoiceField(
-        choices=PROCEDURE_NAME_CHOICES,
-        required=True,
-        label="Procedure Name"
-    )
-    patient_id = forms.CharField(
-        max_length=50,
-        required=True,
-        label="Patient ID"
-    )
-    patient_name = forms.CharField(
-        max_length=100,
-        required=True,
-        label="Patient Name"
-    )
-    age = forms.IntegerField(
-        required=True,
-        label="Age"
-    )
-    gender = forms.ChoiceField(
-        choices=[('Male', 'Male'), ('Female', 'Female')],
-        required=True,
-        label="Gender"
-    )
-    date_of_procedure = forms.DateField(
-        required=True,
-        label="Date of Procedure"
-    )
+    procedure_name = forms.ChoiceField(choices=PROCEDURE_NAME_CHOICES, required=True, label="Procedure Name")
+    patient_id = forms.CharField(max_length=50, required=True, label="Patient ID")
+    patient_name = forms.CharField(max_length=100, required=True, label="Patient Name")
+    age = forms.IntegerField(required=True, label="Age")
+    gender = forms.ChoiceField(choices=[('Male', 'Male'), ('Female', 'Female')], required=True, label="Gender")
+    date_of_procedure = forms.DateField(required=True, label="Date of Procedure")
 
     dynamic_fields = [
         "antimicrobial_prophylaxis_guidelines",
@@ -802,6 +625,224 @@ class SSIEvaluationForm(forms.Form):
                 required=False
             )
 
-# class PatientSurgeryDetails
-# class PatientAntibioticDetails
-# class PatientMicrobiologyDetails
+
+class EventDetailForm(forms.Form):
+    specific_event = forms.ChoiceField(choices=SPECIFIC_EVENT_CHOICES, label="Specific Event", required=True)
+    organ_space_site = forms.CharField(max_length=255, required=False, label="Organ/Space (Specify site)")
+    detected = forms.ChoiceField(choices=DETECTED_CHOICES, label="Detected", required=True)
+    sample_types = forms.ChoiceField(choices=SAMPLE_TYPE_CHOICES, required=True, label="Sample Types")
+    site_of_sample_collection = forms.ChoiceField(choices=SAMPLE_COLLECTION_SITE_CHOICES, required=True, label="Site of Sample Collection")
+    secondary_bsi_contributed = forms.ChoiceField(choices=[('yes', 'Yes'), ('no', 'No')], label="Secondary BSI Contributed to Death", required=True)
+
+
+# update forms
+
+
+class PatientAdministrationUpdateForm(forms.Form):
+    patientName = forms.CharField(max_length=100, label="Patient Name", required=True)
+    # patient_id = forms.CharField(max_length=100, label="Patient ID", required=True)
+    age = forms.IntegerField(label="Age", required=True)
+    gender = forms.ChoiceField(choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')], required=True,
+                               label="Gender")
+    dateOfAdmission = forms.DateField(label="Date of Admission", widget=forms.SelectDateWidget(), required=True)
+    dateOfProcedure = forms.DateField(label="Date of Operative Procedure", widget=forms.SelectDateWidget(),required=True)
+    admittingDepartment = forms.ChoiceField(choices=DEPARTMENT_CHOICES, label="Admitting Department", required=True)
+    departmentPrimarySurgeon = forms.ChoiceField(choices=DOCTOR_CHOICES, label="Department (Primary Surgeon)", required=True)
+    procedureName = forms.ChoiceField(choices=PROCEDURE_NAME_CHOICES, label="Name of the Procedure", required=True)
+    diagnosis = forms.CharField(widget=forms.Textarea, label="Diagnosis",required=True)
+    procedureDoneBy = forms.ChoiceField(choices=DOCTOR_CHOICES, label="Procedure done by (Primary Surgeon)",required=True)
+    operationTheatre = forms.ChoiceField(choices=OT_CHOICES, label="Operation Theatre where Procedure done", required=True)
+    outpatientProcedure = forms.ChoiceField(choices=[('yes', 'Yes'), ('no', 'No')], label="Outpatient Procedure",required=True)
+    scenarioProcedure = forms.ChoiceField(choices=SCENARIO_CHOICES, label="Scenario of Procedure", required=True)
+    woundClass = forms.ChoiceField(choices=WOUND_CLASS_CHOICES, label="Wound Class", required=True)
+    papGiven = forms.ChoiceField(choices=[('yes', 'Yes'), ('no', 'No')], label="Pre/Peri-operative Antibiotic Prophylaxis (PAP) given", required=True)
+    antibioticsGiven = forms.ChoiceField(choices=ANTIBIOTIC_CHOICES, label="If Yes, Antibiotics given", required=True)
+    durationPAP = forms.CharField(max_length=100, label="Duration of PAP", required=True)
+    ssiEventOccurred = forms.ChoiceField(choices=SSI_EVENT_CHOICES, label="SSI Event Occurred", required=True)
+    dateOfEvent = forms.DateField(label="If Yes, Date of Event", widget=forms.SelectDateWidget(), required=True)
+
+
+class MicrobiologyUpdateForm(forms.Form):
+    micro_organism = forms.ChoiceField(
+        label="Micro-organism implicated for SSI event",
+        choices=MICROORGANISM_CHOICES,
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    for antibiotic in ANTIBIOTIC_CHOICES:
+        antibiotic_name = antibiotic[0].lower().replace(' ', '_').replace('-', '_')
+
+        locals()[f'{antibiotic_name}_mic'] = forms.DecimalField(
+            label=f"{antibiotic[0]} MIC",
+            required=False,
+            widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter MIC'})
+        )
+
+        locals()[f'{antibiotic_name}_interpretation'] = forms.ChoiceField(
+            label=f"{antibiotic[0]} Interpretation",
+            choices=INTERPRETATION_CHOICES,
+            required=False,
+            widget=forms.Select(attrs={'class': 'form-control'})
+        )
+
+
+class AntibioticSurveillanceUpdateForm(forms.Form):
+    antibiotic_prior_1 = forms.ChoiceField(label='Antibiotic 1', choices=ANTIBIOTIC_CHOICES, required=False)
+    route_prior_1 = forms.ChoiceField(label='Route of Administration', choices=ROUTE_CHOICES, required=False)
+    duration_prior_1 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
+    doses_prior_1 = forms.ChoiceField(label='Number of doses', choices=DOSE_CHOICES, required=False)
+
+    antibiotic_prior_2 = forms.ChoiceField(label='Antibiotic 2', choices=ANTIBIOTIC_CHOICES, required=False)
+    route_prior_2 = forms.ChoiceField(label='Route of Administration', choices=ROUTE_CHOICES, required=False)
+    duration_prior_2 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
+    doses_prior_2 = forms.ChoiceField(label='Number of doses', choices=DOSE_CHOICES, required=False)
+
+    antibiotic_prior_3 = forms.ChoiceField(label='Antibiotic 3', choices=ANTIBIOTIC_CHOICES, required=False)
+    route_prior_3 = forms.ChoiceField(label='Route of Administration', choices=ROUTE_CHOICES, required=False)
+    duration_prior_3 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
+    doses_prior_3 = forms.ChoiceField(label='Number of doses', choices=DOSE_CHOICES, required=False)
+
+    antibiotic_pre_1 = forms.ChoiceField(label='Antibiotic 1 (Pre/Perioperative)', choices=ANTIBIOTIC_CHOICES, required=False)
+    route_pre_1 = forms.ChoiceField(label='Route of Administration', choices=ROUTE_CHOICES, required=False)
+    duration_pre_1 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
+    doses_pre_1 = forms.ChoiceField(label='Number of doses', choices=DOSE_CHOICES, required=False)
+
+    antibiotic_pre_2 = forms.ChoiceField(label='Antibiotic 2 (Pre/Perioperative)', choices=ANTIBIOTIC_CHOICES, required=False)
+    route_pre_2 = forms.ChoiceField(label='Route of Administration', choices=ROUTE_CHOICES, required=False)
+    duration_pre_2 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
+    doses_pre_2 = forms.ChoiceField(label='Number of doses', choices=DOSE_CHOICES, required=False)
+
+    antibiotic_pre_3 = forms.ChoiceField(label='Antibiotic 3 (Pre/Perioperative)', choices=ANTIBIOTIC_CHOICES, required=False)
+    route_pre_3 = forms.ChoiceField(label='Route of Administration', choices=ROUTE_CHOICES, required=False)
+    duration_pre_3 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
+    doses_pre_3 = forms.ChoiceField(label='Number of doses', choices=DOSE_CHOICES, required=False)
+
+    antibiotic_post_1 = forms.ChoiceField(label='Antibiotic 1 (Post-operative)', choices=ANTIBIOTIC_CHOICES, required=False)
+    route_post_1 = forms.ChoiceField(label='Route of Administration', choices=ROUTE_CHOICES, required=False)
+    duration_post_1 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
+    doses_post_1 = forms.ChoiceField(label='Number of doses', choices=DOSE_CHOICES, required=False)
+
+    antibiotic_post_2 = forms.ChoiceField(label='Antibiotic 2 (Post-operative)', choices=ANTIBIOTIC_CHOICES, required=False)
+    route_post_2 = forms.ChoiceField(label='Route of Administration', choices=ROUTE_CHOICES, required=False)
+    duration_post_2 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
+    doses_post_2 = forms.ChoiceField(label='Number of doses', choices=DOSE_CHOICES, required=False)
+
+    antibiotic_post_3 = forms.ChoiceField(label='Antibiotic 3 (Post-operative)', choices=ANTIBIOTIC_CHOICES, required=False)
+    route_post_3 = forms.ChoiceField(label='Route of Administration', choices=ROUTE_CHOICES, required=False)
+    duration_post_3 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
+    doses_post_3 = forms.ChoiceField(label='Number of doses', choices=DOSE_CHOICES, required=False)
+
+    antibiotic_post_4 = forms.ChoiceField(label='Antibiotic 4 (Post-operative)', choices=ANTIBIOTIC_CHOICES, required=False)
+    route_post_4 = forms.ChoiceField(label='Route of Administration', choices=ROUTE_CHOICES, required=False)
+    duration_post_4 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
+    doses_post_4 = forms.ChoiceField(label='Number of doses', choices=DOSE_CHOICES, required=False)
+
+    antibiotic_post_5 = forms.ChoiceField(label='Antibiotic 5 (Post-operative)', choices=ANTIBIOTIC_CHOICES, required=False)
+    route_post_5 = forms.ChoiceField(label='Route of Administration', choices=ROUTE_CHOICES, required=False)
+    duration_post_5 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
+    doses_post_5 = forms.ChoiceField(label='Number of doses', choices=DOSE_CHOICES, required=False)
+
+    antibiotic_post_6 = forms.ChoiceField(label='Antibiotic 6 (Post-operative)', choices=ANTIBIOTIC_CHOICES, required=False)
+    route_post_6 = forms.ChoiceField(label='Route of Administration', choices=ROUTE_CHOICES, required=False)
+    duration_post_6 = forms.ChoiceField(label='Duration', choices=DURATION_CHOICES, required=False)
+    doses_post_6 = forms.ChoiceField(label='Number of doses', choices=DOSE_CHOICES, required=False)
+
+    time_induction = forms.TimeField(label='Time of Induction', required=False, widget=forms.TimeInput(format='%H:%M'))
+    time_incision = forms.TimeField(label='Time of Incision', required=False, widget=forms.TimeInput(format='%H:%M'))
+    time_end_surgery = forms.TimeField(label='End Time of Surgery', required=False, widget=forms.TimeInput(format='%H:%M'))
+
+
+class PostOpDayUpdateForm(forms.Form):
+    date_of_procedure = forms.DateField(label=_("Date of Procedure"), widget=forms.DateInput(attrs={"type": "date"}))
+    name_of_procedure = forms.ChoiceField(label=_("Name of Procedure"), choices=PROCEDURE_NAME_CHOICES)
+
+    def add_day_fields(self, symptom_name):
+        for day_value, day_label in DAY_OPTIONS:
+            self.fields[f"{symptom_name}_{day_value}"] = forms.ChoiceField(
+                label=f"{day_label} ({symptom_name})",
+                choices=YES_NO_EMPTY_CHOICES,
+                required=False,
+            )
+
+    symptoms = [
+        "purulent_discharge",
+        "localized_pain_tenderness",
+        "localized_swelling",
+        "fever",
+        "incision_opened",
+        "spontaneous_dehiscence",
+        "abscess",
+        "micro_organism_gram",
+        "imaging_infection",
+        "positive_culture_discharge",
+        "blood_culture_sent",
+        "physician_diagnosis",
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(PostOpDayUpdateForm, self).__init__(*args, **kwargs)
+        for symptom in self.symptoms:
+            self.add_day_fields(symptom)
+
+    any_other = forms.CharField(label=_("Any other (specify below)"), required=False, widget=forms.Textarea(attrs={"placeholder": "Additional details"}))
+
+
+class SSIEvaluationUpdateForm(forms.Form):
+    procedure_name = forms.ChoiceField(choices=PROCEDURE_NAME_CHOICES, required=True, label="Procedure Name")
+    patient_id = forms.CharField(max_length=50, required=True, label="Patient ID")
+    patient_name = forms.CharField(max_length=100, required=True, label="Patient Name")
+    age = forms.IntegerField(required=True, label="Age")
+    gender = forms.ChoiceField(choices=[('Male', 'Male'), ('Female', 'Female')], required=True, label="Gender")
+    date_of_procedure = forms.DateField(required=True, label="Date of Procedure")
+
+    dynamic_fields = [
+        "antimicrobial_prophylaxis_guidelines",
+        "prophylaxis_within_1_hour",
+        "antimicrobial_prophylaxis_surgical_procedure",
+        "ssi_pathogens_prophylaxis",
+        "published_recommendations_prophylaxis",
+        "discontinue_antibiotics_24_hours",
+        "redose_3_hour_interval",
+        "adjust_for_bmi",
+        "no_hair_removal",
+        "razors_not_used",
+        "clippers_used",
+        "antiseptic_agent_preparation",
+        "mechanical_colon_preparation",
+        "administer_oral_antimicrobial",
+        "keep_doors_closed",
+        "maintain_normothermia",
+        "protect_primary_closure",
+        "blood_glucose_control_post_op",
+        "measure_glucose_at_6am",
+        "glucose_level_under_200",
+        "screen_preop_glucose",
+        "tight_glucose_control",
+        "nasal_screen_cabg",
+        "nasal_screen_elective",
+        "increased_oxygen_use",
+        "postpone_until_infection_resolves",
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.dynamic_fields:
+            self.fields[f'{field}_choice'] = forms.ChoiceField(
+                choices=[('Yes', 'Yes'), ('No', 'No')],
+                required=False
+            )
+            self.fields[f'{field}_remarks'] = forms.CharField(
+                max_length=100,
+                required=False
+            )
+
+
+class EventDetailUpdateForm(forms.Form):
+    specific_event = forms.ChoiceField(choices=SPECIFIC_EVENT_CHOICES, label="Specific Event", required=True)
+    organ_space_site = forms.CharField(max_length=255, required=False, label="Organ/Space (Specify site)")
+    detected = forms.ChoiceField(choices=DETECTED_CHOICES, label="Detected", required=True)
+    sample_types = forms.ChoiceField(choices=SAMPLE_TYPE_CHOICES, required=True, label="Sample Types")
+    site_of_sample_collection = forms.ChoiceField(choices=SAMPLE_COLLECTION_SITE_CHOICES, required=True, label="Site of Sample Collection")
+    secondary_bsi_contributed = forms.ChoiceField(choices=[('yes', 'Yes'), ('no', 'No')], label="Secondary BSI Contributed to Death", required=True)
+
