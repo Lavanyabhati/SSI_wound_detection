@@ -6,6 +6,6 @@ urlpatterns = [
     # path('admin/', admin.site.urls),
     path('', index),
     path('nurse/', include('Nurse.urls')),
-    # path('jrDoctor/', include('JrDoctor.urls')),
+    path('jrdoctor/', include('JrDoctor.urls')),
     # path('srDoctor/', include('SrDoctor.urls')),
 ]

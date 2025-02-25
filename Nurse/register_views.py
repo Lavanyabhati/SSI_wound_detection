@@ -6,6 +6,7 @@ import numpy as np
 from .forms import *
 from configuration import *
 
+
 class Nurse:
 
     def __init__(self):
@@ -1087,3 +1088,6 @@ class Nurse:
         except Exception as e:
             log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
             return None
+
+
+# GENERATE PDF

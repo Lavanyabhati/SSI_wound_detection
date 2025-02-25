@@ -11,7 +11,7 @@ from .forms import OTPForm
 from .background import OTP
 from configuration import *
 from Nurse.register_views import Nurse
-# from JrDoctor.register_views import JrDoctor
+from JrDoctor.register_views import JrDoctor
 # from SrDoctor.register_views import SrDoctor
 
 
@@ -40,11 +40,11 @@ def otp(request):
             token_scope = TOKEN_SCOPE_NURSE
             prefix = "N_"
             cls_nurse = Nurse()
-        # elif "jrdoctor" in uri:
-        #     user_type = "jrdoctor"
-        #     token_scope = TOKEN_SCOPE_JR_DOCTOR
-        #     prefix = "J_"
-        #     cls_nurse = JrDoctor()
+        elif "jrdoctor" in uri:
+            user_type = "jrdoctor"
+            token_scope = TOKEN_SCOPE_JR_DOCTOR
+            prefix = "J_"
+            cls_nurse = JrDoctor()
         # elif "srdoctor" in uri:
         #     user_type = "srdoctor"
         #     token_scope = TOKEN_SCOPE_SR_DOCTOR
@@ -107,13 +107,13 @@ def otp(request):
                         log.info("NURSE.....")
 
 
-                    # elif token_scope == TOKEN_SCOPE_AGENT:
-                    #     data = {
-                    #         'phone_number': phone_number,
-                    #         'employee_id': employee_id,
-                    #     }
-                    #     add_result = cls_nurse._add_delivery_agent(LOG_PREFIX, data)
-                    #     log.info("AGENT.....")
+                    elif token_scope == TOKEN_SCOPE_JR_DOCTOR:
+                        data = {
+                            'phone_number': phone_number,
+                            'employee_id': employee_id,
+                        }
+                        add_result = cls_nurse._add_jr_doctor(LOG_PREFIX, data)
+                        log.info("JUNIOR DOCTOR.....")
                     #
                     # else:
                     #     data = {
