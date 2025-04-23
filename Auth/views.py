@@ -12,7 +12,7 @@ from .background import OTP
 from configuration import *
 from Nurse.register_views import Nurse
 from JrDoctor.register_views import JrDoctor
-# from SrDoctor.register_views import SrDoctor
+from SrDoctor.register_views import SrDoctor
 
 
 @require_http_methods(["POST"])
@@ -45,11 +45,11 @@ def otp(request):
             token_scope = TOKEN_SCOPE_JR_DOCTOR
             prefix = "J_"
             cls_nurse = JrDoctor()
-        # elif "srdoctor" in uri:
-        #     user_type = "srdoctor"
-        #     token_scope = TOKEN_SCOPE_SR_DOCTOR
-        #     prefix = "S_"
-        #     cls_nurse = SrDoctor()
+        elif "srdoctor" in uri:
+            user_type = "srdoctor"
+            token_scope = TOKEN_SCOPE_SR_DOCTOR
+            prefix = "S_"
+            cls_nurse = SrDoctor()
         else:
             user_type = "unknown"
             token_scope = ''
@@ -114,14 +114,14 @@ def otp(request):
                         }
                         add_result = cls_nurse._add_jr_doctor(LOG_PREFIX, data)
                         log.info("JUNIOR DOCTOR.....")
-                    #
-                    # else:
-                    #     data = {
-                    #         'phone_number': phone_number,
-                    #         'employee_id': employee_id,
-                    #     }
-                    #     add_result = cls_nurse._add_owner_details(LOG_PREFIX, data)
-                    #     log.info("RES.....")
+
+                    else:
+                        data = {
+                            'phone_number': phone_number,
+                            'employee_id': employee_id,
+                        }
+                        add_result = cls_nurse._add_sr_doctor(LOG_PREFIX, data)
+                        log.info("SENIOR DOCTOR.....")
 
                     if not add_result:
                         log.info(

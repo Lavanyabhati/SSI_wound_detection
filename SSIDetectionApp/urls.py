@@ -7,5 +7,5 @@ urlpatterns = [
     path('', index),
     path('nurse/', include('Nurse.urls')),
     path('jrdoctor/', include('JrDoctor.urls')),
-    # path('srDoctor/', include('SrDoctor.urls')),
+    path('srdoctor/', include('SrDoctor.urls')),
 ]

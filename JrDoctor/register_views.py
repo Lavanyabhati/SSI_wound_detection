@@ -59,7 +59,6 @@ class JrDoctor:
                 'gender': gender,
                 'department': department,
                 'date_of_birth': date_of_birth,
-                'verification_status': 'APPROVED',
                 'created_at': datetime.now(),
                 'updated_at': datetime.now(),
             }
@@ -117,6 +116,12 @@ class JrDoctor:
             patient_id = data.get('patient_id')
             age = data.get('age')
             gender = data.get('gender')
+            patientOnSteroids = data.get('patientOnSteroids')
+            diabeticPatient = data.get('diabeticPatient')
+            weight = data.get('weight')
+            alcoholConsumption = data.get('alcoholConsumption')
+            tobaccoConsumption = data.get('tobaccoConsumption')
+            lengthOfSurgery = data.get('lengthOfSurgery')
             dateOfAdmission = data.get('dateOfAdmission')
             dateOfProcedure = data.get('dateOfProcedure')
             admittingDepartment = data.get('admittingDepartment')
@@ -142,6 +147,12 @@ class JrDoctor:
                 'patientName': patientName,
                 'age': age,
                 'gender': gender,
+                'patientOnSteroids': patientOnSteroids,
+                'diabeticPatient': diabeticPatient,
+                'weight': weight,
+                'alcoholConsumption': alcoholConsumption,
+                'tobaccoConsumption': tobaccoConsumption,
+                'lengthOfSurgery': lengthOfSurgery,
                 'dateOfAdmission': dateOfAdmission,
                 'dateOfProcedure': dateOfProcedure,
                 'admittingDepartment': admittingDepartment,
@@ -158,6 +169,7 @@ class JrDoctor:
                 'durationPAP': durationPAP,
                 'ssiEventOccurred': ssiEventOccurred,
                 'dateOfEvent': dateOfEvent,
+                'status': 'REVIEWED',
                 'updated_at': datetime.now(),
             }
 
@@ -204,6 +216,7 @@ class JrDoctor:
                 'micro_organism': micro_organism,
                 'antibiotic': [],
                 'predictions': predictions,
+                'status': 'REVIEWED',
                 'updated_at': datetime.now()
             }
 
@@ -358,6 +371,7 @@ class JrDoctor:
                 'time_induction': time_induction,
                 'time_incision': time_incision,
                 'time_end_surgery': time_end_surgery,
+                'status': 'REVIEWED',
                 'updated_at': datetime.now(),
             }
 
@@ -389,6 +403,7 @@ class JrDoctor:
             data_dict = {
                 'date_of_procedure': date_of_procedure,
                 'name_of_procedure': name_of_procedure,
+                'status': 'REVIEWED',
                 'symptoms': [],
                 'updated_at': datetime.now()
             }
@@ -446,6 +461,7 @@ class JrDoctor:
                 'gender': gender,
                 'date_of_procedure': date_of_procedure,
                 'evaluation_fields': evaluation_fields,
+                'status': 'REVIEWED',
                 'updated_at': datetime.now()
             }
 
@@ -483,6 +499,7 @@ class JrDoctor:
                 'sample_types': sample_types,
                 'site_of_sample_collection': site_of_sample_collection,
                 'secondary_bsi_contributed': secondary_bsi_contributed,
+                'status': 'REVIEWED',
                 'updated_at': datetime.now()
             }
 

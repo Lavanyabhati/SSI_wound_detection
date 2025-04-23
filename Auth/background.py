@@ -71,8 +71,6 @@ class OTP:
                 self.db._delete(filter_d=dfilter)
                 success = True
                 return success, 'Success'
-
-
             return success, None
         except Exception as e:
             log.error(f'{LOG_PREFIX}, "Action":{ACTION}, "MobileNo":"{phone_number}", "OTP":"{otp_code}", "Result":"Failure", "Reason":"{e}"')
