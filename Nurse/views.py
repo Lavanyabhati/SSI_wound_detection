@@ -19,8 +19,27 @@ import io
 import pandas as pd
 from django.http import HttpResponse
 import xlsxwriter
+import joblib
 from SSIDetectionApp import settings
+from Nurse.utils.ml_predictor import predict_ssi
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
 
+
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+
+model = joblib.load("Nurse/ml_model/ssi_model_1.pkl")
+scaler = joblib.load("Nurse/ml_model/scaler.pkl")
+
+
+def encode_mic_value(value):
+    if value == 'Resistant':
+        return 1
+    elif value == 'Sensitive':
+        return 0
+    return -1
 
 def verify_auth_token(func):
     cls_jwt = JWToken()
@@ -114,6 +133,8 @@ def update_nurse_details(request, *args, **kwargs):
         return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error"})
 
 
+# @require_http_methods(["POST"])
+# # @verify_auth_token
 # def add_nurse_details(request, *args, **kwargs):
 #     EVENT = "AddNurseDetails"
 #     IP = client_ip(request)
@@ -156,6 +177,50 @@ def update_nurse_details(request, *args, **kwargs):
 #         log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
 #         return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
 
+@csrf_exempt
+@require_http_methods(["POST"])
+# @verify_auth_token
+def add_nurse_details(request, *args, **kwargs):
+    EVENT = "AddNurseDetails"
+    IP = client_ip(request)
+    LOG_PREFIX = f'"EventName":"{EVENT}", "IP":"{IP}"'
+    cls_nurse = Nurse()
+
+    try:
+        decoded_body = json.loads(request.body.decode())
+        form = NurseForm(decoded_body)
+
+        if not form.is_valid():
+            log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"Form validation failed", "Errors":{form.errors}')
+            return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": form.errors})
+
+        employee_id = 'E_' + ''.join(random.choices('0123456789ABCDEF', k=16))
+
+        data_dict = {
+            'name': decoded_body.get('name'),
+            'email': decoded_body.get('email'),
+            'gender': decoded_body.get('gender'),
+            'department': decoded_body.get('department'),
+            'date_of_birth': decoded_body.get('date_of_birth'),
+            'phone_number': decoded_body.get('phone_number'),
+            'employee_id': employee_id,
+        }
+
+        insert_nurse = cls_nurse._register_nurse(LOG_PREFIX, data=data_dict)
+        log.info(f"INSERT NURSE DETAILS : {insert_nurse}")
+
+        if insert_nurse:
+            return JsonResponse(
+                {"status": "SUCCESS", "statuscode": 200, "msg": "Nurse details added successfully!", "employee_id": employee_id}
+            )
+        else:
+            return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Failed to add nurse details!"})
+
+    except Exception as e:
+        log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
+        return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
+
+
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -188,6 +253,8 @@ def add_patient_administration_details(request, *args, **kwargs):
             'patientOnSteroids': decoded_body.get('patientOnSteroids'),
             'diabeticPatient': decoded_body.get('diabeticPatient'),
             'weight': decoded_body.get('weight'),
+            'height': decoded_body.get('height'),
+            'bmi': decoded_body.get('bmi'),
             'alcoholConsumption': decoded_body.get('alcoholConsumption'),
             'tobaccoConsumption': decoded_body.get('tobaccoConsumption'),
             'lengthOfSurgery': decoded_body.get('lengthOfSurgery'),
@@ -518,54 +585,54 @@ def add_antibiotic_surveillance(request, *args, **kwargs):
 
         data_dict = {
             'patient_id': patient_id,
-            'antibiotic_prior_1': decoded_body.get('antibiotic_prior_1'),
-            'route_prior_1': decoded_body.get('route_prior_1'),
-            'duration_prior_1': decoded_body.get('duration_prior_1'),
-            'doses_prior_1': decoded_body.get('doses_prior_1'),
-            'antibiotic_prior_2': decoded_body.get('antibiotic_prior_2'),
-            'route_prior_2': decoded_body.get('route_prior_2'),
-            'duration_prior_2': decoded_body.get('duration_prior_2'),
-            'doses_prior_2': decoded_body.get('doses_prior_2'),
-            'antibiotic_prior_3': decoded_body.get('antibiotic_prior_3'),
-            'route_prior_3': decoded_body.get('route_prior_3'),
-            'duration_prior_3' : decoded_body.get('duration_prior_3'),
-            'doses_prior_3': decoded_body.get('doses_prior_3'),
-            'antibiotic_pre_1': decoded_body.get('antibiotic_pre_1'),
-            'route_pre_1': decoded_body.get('route_pre_1'),
-            'duration_pre_1': decoded_body.get('duration_pre_1'),
-            'doses_pre_1': decoded_body.get('doses_pre_1'),
-            'antibiotic_pre_2': decoded_body.get('antibiotic_pre_2'),
-            'route_pre_2': decoded_body.get('route_pre_2'),
-            'duration_pre_2': decoded_body.get('duration_pre_2'),
-            'doses_pre_2' : decoded_body.get('doses_pre_2'),
-            'antibiotic_pre_3': decoded_body.get('antibiotic_pre_3'),
-            'route_pre_3': decoded_body.get('route_pre_3'),
-            'duration_pre_3': decoded_body.get('duration_pre_3'),
-            'doses_pre_3': decoded_body.get('doses_pre_3'),
-            'antibiotic_post_1': decoded_body.get('antibiotic_post_1'),
-            'route_post_1': decoded_body.get('route_post_1'),
-            'duration_post_1': decoded_body.get('duration_post_1'),
-            'doses_post_1': decoded_body.get('doses_post_1'),
-            'antibiotic_post_2': decoded_body.get('antibiotic_post_2'),
-            'route_post_2': decoded_body.get('route_post_2'),
-            'duration_post_2': decoded_body.get('duration_post_2'),
-            'doses_post_2': decoded_body.get('doses_post_2'),
-            'antibiotic_post_3': decoded_body.get('antibiotic_post_3'),
-            'route_post_3': decoded_body.get('route_post_3'),
-            'duration_post_3': decoded_body.get('duration_post_3'),
-            'doses_post_3': decoded_body.get('doses_post_3'),
-            'antibiotic_post_4': decoded_body.get('antibiotic_post_4'),
-            'route_post_4': decoded_body.get('route_post_4'),
-            'duration_post_4': decoded_body.get('duration_post_4'),
-            'doses_post_4': decoded_body.get('doses_post_4'),
-            'antibiotic_post_5': decoded_body.get('antibiotic_post_5'),
-            'route_post_5': decoded_body.get('route_post_5'),
-            'duration_post_5': decoded_body.get('duration_post_5'),
-            'doses_post_5': decoded_body.get('doses_post_5'),
-            'antibiotic_post_6': decoded_body.get('antibiotic_post_6'),
-            'route_post_6': decoded_body.get('route_post_6'),
-            'duration_post_6': decoded_body.get('duration_post_6'),
-            'doses_post_6': decoded_body.get('doses_post_6'),
+            # 'antibiotic_prior_1': decoded_body.get('antibiotic_prior_1'),
+            # 'route_prior_1': decoded_body.get('route_prior_1'),
+            # 'duration_prior_1': decoded_body.get('duration_prior_1'),
+            # 'doses_prior_1': decoded_body.get('doses_prior_1'),
+            # 'antibiotic_prior_2': decoded_body.get('antibiotic_prior_2'),
+            # 'route_prior_2': decoded_body.get('route_prior_2'),
+            # 'duration_prior_2': decoded_body.get('duration_prior_2'),
+            # 'doses_prior_2': decoded_body.get('doses_prior_2'),
+            # 'antibiotic_prior_3': decoded_body.get('antibiotic_prior_3'),
+            # 'route_prior_3': decoded_body.get('route_prior_3'),
+            # 'duration_prior_3' : decoded_body.get('duration_prior_3'),
+            # 'doses_prior_3': decoded_body.get('doses_prior_3'),
+            # 'antibiotic_pre_1': decoded_body.get('antibiotic_pre_1'),
+            # 'route_pre_1': decoded_body.get('route_pre_1'),
+            # 'duration_pre_1': decoded_body.get('duration_pre_1'),
+            # 'doses_pre_1': decoded_body.get('doses_pre_1'),
+            # 'antibiotic_pre_2': decoded_body.get('antibiotic_pre_2'),
+            # 'route_pre_2': decoded_body.get('route_pre_2'),
+            # 'duration_pre_2': decoded_body.get('duration_pre_2'),
+            # 'doses_pre_2' : decoded_body.get('doses_pre_2'),
+            # 'antibiotic_pre_3': decoded_body.get('antibiotic_pre_3'),
+            # 'route_pre_3': decoded_body.get('route_pre_3'),
+            # 'duration_pre_3': decoded_body.get('duration_pre_3'),
+            # 'doses_pre_3': decoded_body.get('doses_pre_3'),
+            # 'antibiotic_post_1': decoded_body.get('antibiotic_post_1'),
+            # 'route_post_1': decoded_body.get('route_post_1'),
+            # 'duration_post_1': decoded_body.get('duration_post_1'),
+            # 'doses_post_1': decoded_body.get('doses_post_1'),
+            # 'antibiotic_post_2': decoded_body.get('antibiotic_post_2'),
+            # 'route_post_2': decoded_body.get('route_post_2'),
+            # 'duration_post_2': decoded_body.get('duration_post_2'),
+            # 'doses_post_2': decoded_body.get('doses_post_2'),
+            # 'antibiotic_post_3': decoded_body.get('antibiotic_post_3'),
+            # 'route_post_3': decoded_body.get('route_post_3'),
+            # 'duration_post_3': decoded_body.get('duration_post_3'),
+            # 'doses_post_3': decoded_body.get('doses_post_3'),
+            # 'antibiotic_post_4': decoded_body.get('antibiotic_post_4'),
+            # 'route_post_4': decoded_body.get('route_post_4'),
+            # 'duration_post_4': decoded_body.get('duration_post_4'),
+            # 'doses_post_4': decoded_body.get('doses_post_4'),
+            # 'antibiotic_post_5': decoded_body.get('antibiotic_post_5'),
+            # 'route_post_5': decoded_body.get('route_post_5'),
+            # 'duration_post_5': decoded_body.get('duration_post_5'),
+            # 'doses_post_5': decoded_body.get('doses_post_5'),
+            # 'antibiotic_post_6': decoded_body.get('antibiotic_post_6'),
+            # 'route_post_6': decoded_body.get('route_post_6'),
+            # 'duration_post_6': decoded_body.get('duration_post_6'),
+            # 'doses_post_6': decoded_body.get('doses_post_6'),
             'time_induction': decoded_body.get('time_induction'),
             'time_incision': decoded_body.get('time_incision'),
             'time_end_surgery': decoded_body.get('time_end_surgery')
@@ -776,3 +843,316 @@ def all_forms_completed(session):
                       'form4_completed', 'form5_completed', 'form6_completed']
     return all(session.get(flag, False) for flag in required_flags)
 
+
+
+# GET for ML
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_patient_admin_details(request, *args, **kwargs):
+    EVENT = "GetPatientAdminDetails"
+    IP = client_ip(request)
+    LOG_PREFIX = f'"EventName":"{EVENT}", "IP":"{IP}"'
+    cls_register = Nurse()
+
+    patient_id = request.GET.get('patient_id')
+
+    if not patient_id:
+        log.error(f'{LOG_PREFIX} - "Result":"Failure", "Reason":"Missing patient_id"')
+        return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": "Missing patient_id"})
+
+    try:
+        patient_admin_details = cls_register._patient_admin_details(LOG_PREFIX, patient_id)
+
+        if patient_admin_details:
+            log.info(
+                f'{LOG_PREFIX} - "Result":"Success", "PatientId":"{patient_id}", "PatientAdminDetails":{patient_admin_details}')
+            return JsonResponse({"status": "SUCCESS", "statuscode": 200, "msg": "Patient admin details retrieved successfully", "data": patient_admin_details})
+        else:
+            log.error(f'{LOG_PREFIX} - "Result":"Failure", "Reason":"DataNotFound", "PatientId":"{patient_id}"')
+            return JsonResponse({"status": "FAILURE", "statuscode": 404, "msg": "Patient admin details not found"})
+
+    except Exception as e:
+        log.error(f'{LOG_PREFIX} - "Result":"Failure", "Reason":"{e}"')
+        return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": f"Internal server error: {str(e)}"})
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_patient_microbiology_details(request, *args, **kwargs):
+    EVENT = "GetPatientMicrobiologyDetails"
+    IP = client_ip(request)
+    LOG_PREFIX = f'"EventName":"{EVENT}", "IP":"{IP}"'
+    cls_register = Nurse()
+
+    patient_id = request.GET.get('patient_id')
+
+    if not patient_id:
+        log.error(f'{LOG_PREFIX} - "Result":"Failure", "Reason":"Missing patient_id"')
+        return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": "Missing patient_id"})
+
+    try:
+        patient_microbiology_details = cls_register._patient_microbiology_details(LOG_PREFIX, patient_id)
+
+        if patient_microbiology_details:
+            log.info(
+                f'{LOG_PREFIX} - "Result":"Success", "PatientId":"{patient_id}", "PatientMicrobiologyDetails":{patient_microbiology_details}')
+            return JsonResponse({"status": "SUCCESS", "statuscode": 200, "msg": "Patient microbiology details retrieved successfully", "data": patient_microbiology_details})
+        else:
+            log.error(f'{LOG_PREFIX} - "Result":"Failure", "Reason":"DataNotFound", "PatientId":"{patient_id}"')
+            return JsonResponse({"status": "FAILURE", "statuscode": 404, "msg": "Patient microbiology details not found"})
+
+    except Exception as e:
+        log.error(f'{LOG_PREFIX} - "Result":"Failure", "Reason":"{e}"')
+        return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": f"Internal server error: {str(e)}"})
+
+
+
+# ML processing
+
+# @csrf_exempt
+# @require_http_methods(["GET"])
+# def get_ml_prediction_data(request, *args, **kwargs):
+#     EVENT = "GenerateML"
+#     IP = client_ip(request)
+#     LOG_PREFIX = f'"EventName":"{EVENT}", "IP":"{IP}"'
+#
+#     try:
+#         patient_id = request.session.get('patient_id') or request.GET.get('patient_id')
+#
+#         if not patient_id:
+#             log.warning(f'{LOG_PREFIX} - "Result":"Failure", "Reason":"Missing patient_id in session or query params"')
+#             return JsonResponse({
+#                 "status": "FAILURE",
+#                 "statuscode": 400,
+#                 "msg": "Patient ID not found in session or query parameters!"
+#             })
+#
+#         # Fetch patient form data from DB
+#         cls_nurse = Nurse()
+#         admin_data = cls_nurse._patient_admin_details(LOG_PREFIX, patient_id)
+#         micro_data = cls_nurse._patient_microbiology_details(LOG_PREFIX, patient_id)
+#
+#         if not admin_data or not micro_data:
+#             log.warning(f'{LOG_PREFIX} - "Result":"Failure", "Reason":"Missing admin or microbiology data for patient_id {patient_id}"')
+#             return JsonResponse({
+#                 "status": "FAILURE",
+#                 "statuscode": 404,
+#                 "msg": "Required form data not found!"
+#             })
+#
+#         # Compose the ML input dictionary
+#         ml_input = {
+#             'Age (years)': admin_data.get('age'),
+#             'Sex': admin_data.get('gender'),
+#             'Patient on Steroid (Last 3 Months)': admin_data.get('patientOnSteroids'),
+#             'Regular Smoker': admin_data.get('tobaccoConsumption'),
+#             'Regular Alcohol Consumer': admin_data.get('alcoholConsumption'),
+#             'Diabetic (HB1C)': admin_data.get('diabeticPatient'),
+#             'BMI_Final': admin_data.get('bmi'),
+#             'Surgery_Duration_Final': admin_data.get('lengthOfSurgery'),
+#             'E.coli': micro_data.get('micro_organism', ''),
+#             'mic1': '',
+#             'interpretation1': '',
+#             'mic2': '',
+#             'interpretation2': '',
+#             'mic3': '',
+#             'interpretation3': '',
+#             'mic4': '',
+#             'interpretation4': ''
+#         }
+#
+#         # Fill mic & interpretation fields
+#         antibiotics = micro_data.get('antibiotic', [])
+#         for i in range(min(4, len(antibiotics))):
+#             ml_input[f'mic{i + 1}'] = antibiotics[i].get('mic_value', '')
+#             ml_input[f'interpretation{i + 1}'] = antibiotics[i].get('interpretation', '')
+#
+#         prediction = predict_ssi(ml_input)
+#
+#         log.info(f'{LOG_PREFIX} - "Result":"Success", "Prediction":{prediction}')
+#         return JsonResponse({"status": "SUCCESS", "prediction": prediction})
+#
+#     except Exception as e:
+#         log.error(f'{LOG_PREFIX} - "Result":"Failure", "Reason":"{e}"')
+#         return JsonResponse({
+#             "status": "FAILURE",
+#             "statuscode": 500,
+#             "msg": f"Internal server error: {str(e)}"
+#         })
+
+#
+# @csrf_exempt
+# @require_http_methods(["GET"])
+# def predict_ssi_view(request):
+#     try:
+#         # Assume the ml_input dictionary is generated like earlier view
+#         patient_id = request.session.get('patient_id')
+#         if not patient_id:
+#             return JsonResponse({"status": "FAILURE", "msg": "No patient ID in session"})
+#
+#         cls_nurse = Nurse()
+#         admin_data = cls_nurse._patient_admin_details(LOG_PREFIX, patient_id)
+#         micro_data = micro_data = cls_nurse._patient_microbiology_details(LOG_PREFIX, patient_id)
+#
+#         if not admin_data or not micro_data:
+#             return JsonResponse({"status": "FAILURE", "msg": "Missing form data"})
+#
+#         # Construct input like before
+#         ml_input = {
+#             'Age (years)': admin_data.get('age'),
+#             'Sex': admin_data.get('gender'),
+#             'Patient on Steroid (Last 3 Months)': admin_data.get('patientOnSteroids'),
+#             'Regular Smoker': admin_data.get('tobaccoConsumption'),
+#             'Regular Alcohol Consumer': admin_data.get('alcoholConsumption'),
+#             'Diabetic (HB1C)': admin_data.get('diabeticPatient'),
+#             'BMI_Final': admin_data.get('bmi'),
+#             'Surgery_Duration_Final': admin_data.get('lengthOfSurgery'),
+#             'E.coli': micro_data.get('micro_organism', ''),
+#             'mic1': '',
+#             'interpretation1': '',
+#             'mic2': '',
+#             'interpretation2': '',
+#             'mic3': '',
+#             'interpretation3': '',
+#             'mic4': '',
+#             'interpretation4': ''
+#         }
+#
+#         antibiotics = micro_data.get('antibiotic', [])
+#         for i in range(min(4, len(antibiotics))):
+#             ml_input[f'mic{i+1}'] = antibiotics[i].get('mic_value', '')
+#             ml_input[f'interpretation{i+1}'] = antibiotics[i].get('interpretation', '')
+#
+#         prediction = predict_ssi(ml_input)
+#
+#         return JsonResponse({"status": "SUCCESS", "prediction": prediction})
+#
+#     except Exception as e:
+#         return JsonResponse({"status": "FAILURE", "error": str(e)})
+
+def encode_mic_value(value):
+    if value == 'Resistant':
+        return 1
+    elif value == 'Sensitive':
+        return 0
+    return -1  # or you can return NaN or another default value
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_ml_prediction_data(request, *args, **kwargs):
+    EVENT = "GenerateML"
+    IP = client_ip(request)
+    LOG_PREFIX = f'"EventName":"{EVENT}", "IP":"{IP}"'
+
+    try:
+        patient_id = request.session.get('patient_id') or request.GET.get('patient_id')
+
+        if not patient_id:
+            log.warning(f'{LOG_PREFIX} - "Result":"Failure", "Reason":"Missing patient_id in session or query params"')
+            return JsonResponse({
+                "status": "FAILURE",
+                "statuscode": 400,
+                "msg": "Patient ID not found in session or query parameters!"
+            })
+
+        # Fetch patient form data from DB
+        cls_nurse = Nurse()
+        admin_data = cls_nurse._patient_admin_details(LOG_PREFIX, patient_id)
+        micro_data = cls_nurse._patient_microbiology_details(LOG_PREFIX, patient_id)
+
+        if not admin_data or not micro_data:
+            log.warning(f'{LOG_PREFIX} - "Result":"Failure", "Reason":"Missing admin or microbiology data for patient_id {patient_id}"')
+            return JsonResponse({
+                "status": "FAILURE",
+                "statuscode": 404,
+                "msg": "Required form data not found!"
+            })
+
+        # Compose the ML input dictionary with all 17 features expected by the model
+        ml_input = {
+            'Age (years)': admin_data.get('age', 0),  # Default to 0 if missing
+            'Sex': admin_data.get('gender', 'M'),  # Default to 'M' if missing
+            'Patient on Steroid (Last 3 Months)': admin_data.get('patientOnSteroids', 0),  # Default to 0 if missing
+            'Regular Smoker': admin_data.get('tobaccoConsumption', 0),  # Default to 0 if missing
+            'Regular Alcohol Consumer': admin_data.get('alcoholConsumption', 0),  # Default to 0 if missing
+            'Diabetic (HB1C)': admin_data.get('diabeticPatient', 0),  # Default to 0 if missing
+            'BMI_Final': admin_data.get('bmi', 0),  # Default to 0 if missing
+            'Surgery_Duration_Final': admin_data.get('lengthOfSurgery', 0),  # Default to 0 if missing
+            'E.coli': micro_data.get('micro_organism', ''),  # Default to empty string if missing
+            'mic1': '',  # Empty default for missing MIC values
+            'interpretation1': '',  # Empty default for missing interpretation
+            'mic2': '',  # Empty default for missing MIC values
+            'interpretation2': '',  # Empty default for missing interpretation
+            'mic3': '',  # Empty default for missing MIC values
+            'interpretation3': '',  # Empty default for missing interpretation
+            'mic4': '',  # Empty default for missing MIC values
+            'interpretation4': ''  # Empty default for missing interpretation
+        }
+
+        # Fill mic & interpretation fields with data from antibiotics
+        antibiotics = micro_data.get('antibiotic', [])
+        for i in range(min(4, len(antibiotics))):
+            ml_input[f'mic{i + 1}'] = antibiotics[i].get('mic_value', '')
+            ml_input[f'interpretation{i + 1}'] = antibiotics[i].get('interpretation', '')
+
+        # Convert the input to a numpy array for scaling and handling NaNs
+        input_data = [
+            ml_input['Age (years)'],
+            0 if ml_input['Sex'] == 'F' else 1,  # Convert 'F' -> 0 and 'M' -> 1 for Sex
+            ml_input['Patient on Steroid (Last 3 Months)'],
+            ml_input['Regular Smoker'],
+            ml_input['Regular Alcohol Consumer'],
+            ml_input['Diabetic (HB1C)'],
+            ml_input['BMI_Final'],
+            ml_input['Surgery_Duration_Final'],
+            1 if ml_input['E.coli'] == 'E coli' else 0,  # Convert 'E coli' -> 1, other values -> 0
+            encode_mic_value(ml_input['mic1']),
+            encode_mic_value(ml_input['mic2']),
+            encode_mic_value(ml_input['mic3']),
+            encode_mic_value(ml_input['mic4']),
+            encode_mic_value(ml_input['interpretation1']),
+            encode_mic_value(ml_input['interpretation2']),
+            encode_mic_value(ml_input['interpretation3']),
+            encode_mic_value(ml_input['interpretation4'])
+        ]
+
+        # Ensure the input has 17 features (add default values for missing ones)
+        expected_num_features = 17
+        while len(input_data) < expected_num_features:
+            input_data.append(0)  # Append 0 or another default value if features are missing
+
+        # Ensure all values are floatable or NaN, handling non-numeric types
+        try:
+            input_array = np.array(input_data, dtype=float).reshape(1, -1)
+        except ValueError as e:
+            return JsonResponse({
+                "status": "FAILURE",
+                "statuscode": 400,
+                "msg": f"Invalid input data: {str(e)}"
+            })
+
+        # Check for NaN values and impute if necessary
+        if np.isnan(input_array).any():
+            imputer = SimpleImputer(strategy='mean')  # Impute missing values with mean
+            input_array = imputer.fit_transform(input_array)
+
+        # Scale the input data
+        scaled_input = scaler.transform(input_array)
+
+        # Predict using the ML model
+        prediction = model.predict(scaled_input)
+
+        # Convert prediction to a native Python type (e.g., int or float)
+        prediction_result = prediction.item() if isinstance(prediction, np.ndarray) else prediction
+
+        log.info(f'{LOG_PREFIX} - "Result":"Success", "Prediction":{prediction_result}')
+        return JsonResponse({"status": "SUCCESS", "prediction": prediction_result})
+
+    except Exception as e:
+        log.error(f'{LOG_PREFIX} - "Result":"Failure", "Reason":"{e}"')
+        return JsonResponse({
+            "status": "FAILURE",
+            "statuscode": 500,
+            "msg": f"Internal server error: {str(e)}"
+        })

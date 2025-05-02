@@ -5,6 +5,9 @@ import random
 import numpy as np
 from .forms import *
 from configuration import *
+import matplotlib.pyplot as plt
+import os
+from django.http import FileResponse, JsonResponse
 
 
 class Nurse:
@@ -41,6 +44,36 @@ class Nurse:
             log.error(f'{LOG_PREFIX}, "Action":{ACTION}, "MobileNo":"{phone_number}", "Result":"Failure", "Reason":"{e}"')
             return success, None
 
+    def _register_nurse(self, LOG_PREFIX, data):
+        try:
+            employee_id = data.get('employee_id')
+            phone_number = data.get('phone_number', '')
+            name = data.get('name', '')
+            email = data.get('email', '')
+            gender = data.get('gender', '')
+            department = data.get('department', '')
+            date_of_birth = data.get('date_of_birth', '')
+
+            data_dict = {
+                'name': name,
+                'email': email,
+                'gender': gender,
+                'employee_id': employee_id,
+                'phone_number': phone_number,
+                'department': department,
+                'date_of_birth': date_of_birth,
+                'created_at': datetime.now(),
+                'updated_at': datetime.now(),
+            }
+
+            register_nurse = self.db_nurse._insert(data=data_dict)
+            print("Nurse Data saved successfully!")
+            return True if register_nurse.inserted_id else False
+
+        except Exception as e:
+            log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
+            return None
+
     def _add_nurse(self, LOG_PREFIX,data):
         try:
             employee_id = data.get('employee_id')
@@ -61,6 +94,8 @@ class Nurse:
                 'name': name,
                 'email': email,
                 'gender': gender,
+                'employee_id': employee_id,
+                'phone_number': phone_number,
                 'department': department,
                 'date_of_birth': date_of_birth,
                 'created_at': datetime.now(),
@@ -122,6 +157,8 @@ class Nurse:
             patientOnSteroids = data.get('patientOnSteroids')
             diabeticPatient = data.get('diabeticPatient')
             weight = data.get('weight')
+            height = data.get('height')
+            bmi = data.get('bmi')
             alcoholConsumption = data.get('alcoholConsumption')
             tobaccoConsumption = data.get('tobaccoConsumption')
             lengthOfSurgery = data.get('lengthOfSurgery')
@@ -149,6 +186,8 @@ class Nurse:
                 'patientOnSteroids': patientOnSteroids,
                 'diabeticPatient': diabeticPatient,
                 'weight': weight,
+                'height': height,
+                'bmi': bmi,
                 'alcoholConsumption': alcoholConsumption,
                 'tobaccoConsumption': tobaccoConsumption,
                 'lengthOfSurgery': lengthOfSurgery,
@@ -370,108 +409,108 @@ class Nurse:
     def _add_antibiotic_surveillance(self, LOG_PREFIX, data):
         try:
             patient_id = data.get('patient_id')
-            antibiotic_prior_1 = data.get('antibiotic_prior_1')
-            route_prior_1 = data.get('route_prior_1')
-            duration_prior_1 = data.get('duration_prior_1')
-            doses_prior_1 = data.get('doses_prior_1')
-            antibiotic_prior_2 = data.get('antibiotic_prior_2')
-            route_prior_2 = data.get('route_prior_2')
-            duration_prior_2 = data.get('duration_prior_2')
-            doses_prior_2 = data.get('doses_prior_2')
-            antibiotic_prior_3 = data.get('antibiotic_prior_3')
-            route_prior_3 = data.get('route_prior_3')
-            duration_prior_3 = data.get('duration_prior_3')
-            doses_prior_3 = data.get('doses_prior_3')
-            antibiotic_pre_1 = data.get('antibiotic_pre_1')
-            route_pre_1 = data.get('route_pre_1')
-            duration_pre_1 = data.get('duration_pre_1')
-            doses_pre_1 = data.get('doses_pre_1')
-            antibiotic_pre_2 = data.get('antibiotic_pre_2')
-            route_pre_2 = data.get('route_pre_2')
-            duration_pre_2 = data.get('duration_pre_2')
-            doses_pre_2 = data.get('doses_pre_2')
-            antibiotic_pre_3 = data.get('antibiotic_pre_3')
-            route_pre_3 = data.get('route_pre_3')
-            duration_pre_3 = data.get('duration_pre_3')
-            doses_pre_3 = data.get('doses_pre_3')
-            antibiotic_post_1 = data.get('antibiotic_post_1')
-            route_post_1 = data.get('route_post_1')
-            duration_post_1 = data.get('duration_post_1')
-            doses_post_1 = data.get('doses_post_1')
-            antibiotic_post_2 = data.get('antibiotic_post_2')
-            route_post_2 = data.get('route_post_2')
-            duration_post_2 = data.get('duration_post_2')
-            doses_post_2 = data.get('doses_post_2')
-            antibiotic_post_3 = data.get('antibiotic_post_3')
-            route_post_3 = data.get('route_post_3')
-            duration_post_3 = data.get('duration_post_3')
-            doses_post_3 = data.get('doses_post_3')
-            antibiotic_post_4 = data.get('antibiotic_post_4')
-            route_post_4 = data.get('route_post_4')
-            duration_post_4 = data.get('duration_post_4')
-            doses_post_4 = data.get('doses_post_4')
-            antibiotic_post_5 = data.get('antibiotic_post_5')
-            route_post_5 = data.get('route_post_5')
-            duration_post_5 = data.get('duration_post_5')
-            doses_post_5 = data.get('doses_post_5')
-            antibiotic_post_6 = data.get('antibiotic_post_6')
-            route_post_6 = data.get('route_post_6')
-            duration_post_6 = data.get('duration_post_6')
-            doses_post_6 = data.get('doses_post_6')
+            # antibiotic_prior_1 = data.get('antibiotic_prior_1')
+            # route_prior_1 = data.get('route_prior_1')
+            # duration_prior_1 = data.get('duration_prior_1')
+            # doses_prior_1 = data.get('doses_prior_1')
+            # antibiotic_prior_2 = data.get('antibiotic_prior_2')
+            # route_prior_2 = data.get('route_prior_2')
+            # duration_prior_2 = data.get('duration_prior_2')
+            # doses_prior_2 = data.get('doses_prior_2')
+            # antibiotic_prior_3 = data.get('antibiotic_prior_3')
+            # route_prior_3 = data.get('route_prior_3')
+            # duration_prior_3 = data.get('duration_prior_3')
+            # doses_prior_3 = data.get('doses_prior_3')
+            # antibiotic_pre_1 = data.get('antibiotic_pre_1')
+            # route_pre_1 = data.get('route_pre_1')
+            # duration_pre_1 = data.get('duration_pre_1')
+            # doses_pre_1 = data.get('doses_pre_1')
+            # antibiotic_pre_2 = data.get('antibiotic_pre_2')
+            # route_pre_2 = data.get('route_pre_2')
+            # duration_pre_2 = data.get('duration_pre_2')
+            # doses_pre_2 = data.get('doses_pre_2')
+            # antibiotic_pre_3 = data.get('antibiotic_pre_3')
+            # route_pre_3 = data.get('route_pre_3')
+            # duration_pre_3 = data.get('duration_pre_3')
+            # doses_pre_3 = data.get('doses_pre_3')
+            # antibiotic_post_1 = data.get('antibiotic_post_1')
+            # route_post_1 = data.get('route_post_1')
+            # duration_post_1 = data.get('duration_post_1')
+            # doses_post_1 = data.get('doses_post_1')
+            # antibiotic_post_2 = data.get('antibiotic_post_2')
+            # route_post_2 = data.get('route_post_2')
+            # duration_post_2 = data.get('duration_post_2')
+            # doses_post_2 = data.get('doses_post_2')
+            # antibiotic_post_3 = data.get('antibiotic_post_3')
+            # route_post_3 = data.get('route_post_3')
+            # duration_post_3 = data.get('duration_post_3')
+            # doses_post_3 = data.get('doses_post_3')
+            # antibiotic_post_4 = data.get('antibiotic_post_4')
+            # route_post_4 = data.get('route_post_4')
+            # duration_post_4 = data.get('duration_post_4')
+            # doses_post_4 = data.get('doses_post_4')
+            # antibiotic_post_5 = data.get('antibiotic_post_5')
+            # route_post_5 = data.get('route_post_5')
+            # duration_post_5 = data.get('duration_post_5')
+            # doses_post_5 = data.get('doses_post_5')
+            # antibiotic_post_6 = data.get('antibiotic_post_6')
+            # route_post_6 = data.get('route_post_6')
+            # duration_post_6 = data.get('duration_post_6')
+            # doses_post_6 = data.get('doses_post_6')
             time_induction = data.get('time_induction')
             time_incision = data.get('time_incision')
             time_end_surgery = data.get('time_end_surgery')
 
             data_dict = {
                 'patient_id': patient_id,
-                'antibiotic_prior_1': antibiotic_prior_1,
-                'route_prior_1': route_prior_1,
-                'duration_prior_1': duration_prior_1,
-                'doses_prior_1': doses_prior_1,
-                'antibiotic_prior_2': antibiotic_prior_2,
-                'route_prior_2': route_prior_2,
-                'duration_prior_2': duration_prior_2,
-                'doses_prior_2' : doses_prior_2,
-                'antibiotic_prior_3': antibiotic_prior_3,
-                'route_prior_3': route_prior_3,
-                'duration_prior_3': duration_prior_3,
-                'doses_prior_3': doses_prior_3,
-                'antibiotic_pre_1': antibiotic_pre_1,
-                'route_pre_1': route_pre_1,
-                'duration_pre_1': duration_pre_1,
-                'doses_pre_1': doses_pre_1,
-                'antibiotic_pre_2': antibiotic_pre_2,
-                'route_pre_2': route_pre_2,
-                'duration_pre_2': duration_pre_2,
-                'doses_pre_2': doses_pre_2,
-                'antibiotic_pre_3': antibiotic_pre_3,
-                'route_pre_3': route_pre_3,
-                'duration_pre_3': duration_pre_3,
-                'doses_pre_3': doses_pre_3,
-                'antibiotic_post_1': antibiotic_post_1,
-                'route_post_1': route_post_1,
-                'duration_post_1': duration_post_1,
-                'doses_post_1': doses_post_1,
-                'antibiotic_post_2': antibiotic_post_2,
-                'route_post_2': route_post_2,
-                'duration_post_2': duration_post_2,
-                'doses_post_2': doses_post_2,
-                'antibiotic_post_3': antibiotic_post_3,
-                'route_post_3': route_post_3,
-                'duration_post_3': duration_post_3,
-                'doses_post_3': doses_post_3,
-                'antibiotic_post_4': antibiotic_post_4,
-                'route_post_4': route_post_4,
-                'duration_post_4': duration_post_4,
-                'doses_post_4': doses_post_4,
-                'antibiotic_post_5': antibiotic_post_5,
-                'route_post_5': route_post_5,
-                'duration_post_5': duration_post_5,
-                'doses_post_5': doses_post_5,
-                'antibiotic_post_6': antibiotic_post_6,
-                'route_post_6': route_post_6,
-                'duration_post_6': duration_post_6,
-                'doses_post_6': doses_post_6,
+                # 'antibiotic_prior_1': antibiotic_prior_1,
+                # 'route_prior_1': route_prior_1,
+                # 'duration_prior_1': duration_prior_1,
+                # 'doses_prior_1': doses_prior_1,
+                # 'antibiotic_prior_2': antibiotic_prior_2,
+                # 'route_prior_2': route_prior_2,
+                # 'duration_prior_2': duration_prior_2,
+                # 'doses_prior_2' : doses_prior_2,
+                # 'antibiotic_prior_3': antibiotic_prior_3,
+                # 'route_prior_3': route_prior_3,
+                # 'duration_prior_3': duration_prior_3,
+                # 'doses_prior_3': doses_prior_3,
+                # 'antibiotic_pre_1': antibiotic_pre_1,
+                # 'route_pre_1': route_pre_1,
+                # 'duration_pre_1': duration_pre_1,
+                # 'doses_pre_1': doses_pre_1,
+                # 'antibiotic_pre_2': antibiotic_pre_2,
+                # 'route_pre_2': route_pre_2,
+                # 'duration_pre_2': duration_pre_2,
+                # 'doses_pre_2': doses_pre_2,
+                # 'antibiotic_pre_3': antibiotic_pre_3,
+                # 'route_pre_3': route_pre_3,
+                # 'duration_pre_3': duration_pre_3,
+                # 'doses_pre_3': doses_pre_3,
+                # 'antibiotic_post_1': antibiotic_post_1,
+                # 'route_post_1': route_post_1,
+                # 'duration_post_1': duration_post_1,
+                # 'doses_post_1': doses_post_1,
+                # 'antibiotic_post_2': antibiotic_post_2,
+                # 'route_post_2': route_post_2,
+                # 'duration_post_2': duration_post_2,
+                # 'doses_post_2': doses_post_2,
+                # 'antibiotic_post_3': antibiotic_post_3,
+                # 'route_post_3': route_post_3,
+                # 'duration_post_3': duration_post_3,
+                # 'doses_post_3': doses_post_3,
+                # 'antibiotic_post_4': antibiotic_post_4,
+                # 'route_post_4': route_post_4,
+                # 'duration_post_4': duration_post_4,
+                # 'doses_post_4': doses_post_4,
+                # 'antibiotic_post_5': antibiotic_post_5,
+                # 'route_post_5': route_post_5,
+                # 'duration_post_5': duration_post_5,
+                # 'doses_post_5': doses_post_5,
+                # 'antibiotic_post_6': antibiotic_post_6,
+                # 'route_post_6': route_post_6,
+                # 'duration_post_6': duration_post_6,
+                # 'doses_post_6': doses_post_6,
                 'time_induction': time_induction,
                 'time_incision': time_incision,
                 'time_end_surgery': time_end_surgery,
@@ -619,3 +658,49 @@ class Nurse:
         except Exception as e:
             logging.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
             return None
+
+
+# GET for ML
+
+    def _patient_admin_details(self, LOG_PREFIX, patient_id):
+        try:
+            data_dict = {
+                'patient_id': patient_id,
+            }
+            log.info("PATIENT ADMIN COLLECTION ::: %s" %self.db_patient_admin.coll_name)
+            patient_admin_details = self.db_patient_admin._find_one(filter=data_dict)
+            return patient_admin_details
+
+        except Exception as e:
+            log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
+            return None
+
+    def _patient_microbiology_details(self, LOG_PREFIX, patient_id):
+        try:
+            data_dict = {
+                'patient_id': patient_id,
+            }
+            log.info("PATIENT MICROBIOLOGY COLLECTION ::: %s" %self.db_microbiology.coll_name)
+            patient_admin_details = self.db_microbiology._find_one(filter=data_dict)
+            return patient_admin_details
+
+        except Exception as e:
+            log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
+            return None
+
+    def plot_patient_prediction(data, prediction, patient_id):
+        # Example plot
+        fig, ax = plt.subplots()
+        ax.bar(['Prediction'], [prediction])
+        ax.set_title(f"SSI Prediction for Patient {patient_id}")
+
+        graph_path = f'static/patient_graphs/{patient_id}_prediction.png'
+        plt.savefig(graph_path)
+        plt.close()
+        return graph_path
+
+    def serve_prediction_graph(request, patient_id):
+        file_path = os.path.join('static/patient_graphs', f'{patient_id}_prediction.png')
+        if os.path.exists(file_path):
+            return FileResponse(open(file_path, 'rb'), content_type='image/png')
+        return JsonResponse({"status": "FAILURE", "msg": "Graph not found"})

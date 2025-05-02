@@ -413,7 +413,7 @@ SAMPLE_COLLECTION_SITE_CHOICES = [
 class NurseForm(forms.Form):
     name = forms.CharField(max_length=100, label="Employee Name", required=True)
     email = forms.EmailField(max_length=100, label="Employee Name", required=True)
-    gender = forms.ChoiceField(choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')], label="Employee Name", required=True)
+    gender = forms.ChoiceField(choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')], label="Employee Name", required=True)
     department = forms.ChoiceField(choices=DEPARTMENT_CHOICES,label="Employee Department", required=True)
     phone_number = forms.CharField(max_length=10, required=True, label="Phone Number")
     date_of_birth = forms.DateField(required=True, widget=forms.DateInput(attrs={'type': 'date'}), label="Date of Birth")
@@ -437,6 +437,7 @@ class PatientAdministrationForm(forms.Form):
     patientOnSteroids = forms.ChoiceField(choices=[('yes', 'Yes'), ('no', 'No')], label="Patient on Steroids",required=True)
     diabeticPatient = forms.ChoiceField(choices=[('no', 'No'), ('high','High'), ('low', 'Low')], label="Patient Diabetic",required=True)
     weight = forms.IntegerField(label="Weight", required=True)
+    height = forms.IntegerField(label="Height", required=True)
     alcoholConsumption = forms.ChoiceField(choices=[('yes', 'Yes'), ('no', 'No')], label="Patient is a regular alcohol consumer",required=True)
     tobaccoConsumption = forms.ChoiceField(choices=[('yes', 'Yes'), ('no', 'No')], label="Patient is a regular tobacco consumer",required=True)
     lengthOfSurgery = forms.IntegerField(label="Length of Surgery", required=True)

@@ -6,6 +6,7 @@ from reports.views import *
 urlpatterns = [
     path('otp/', authviews.otp, name='OTP'),
     path('update/', update_nurse_details, name='update_nurse_details'),
+    path('register/', add_nurse_details, name='add_nurse_details'),
     path('patient_administration_details/add/', add_patient_administration_details, name='add_patient_administration_details'),
     path('patient_microbiology_details/add/', add_microbiology_details, name='add_microbiology_details'),
     path('patient_antibiotic_surveillance/add/', add_antibiotic_surveillance, name='add_antibiotic_surveillance'),
@@ -25,6 +26,8 @@ urlpatterns = [
     path("patient/ssi_evaluation/pdf/", generate_patient_ssi_evaluation_pdf, name="generate_patient_ssi_evaluation_pdf"),
     path("patient/ssi_evaluation/excel/", generate_patient_ssi_evaluation_excel, name="generate_patient_ssi_evaluation_excel"),
     path("patient/event/pdf/", generate_patient_event_pdf, name="generate_patient_event_pdf"),
-    path("patient/event/excel/", generate_patient_event_excel, name="generate_patient_event_excel")
+    path("patient/event/excel/", generate_patient_event_excel, name="generate_patient_event_excel"),
 
+
+    path("patient/ml_output/", get_ml_prediction_data, name="get_ml_prediction_data")
 ]

@@ -6,6 +6,7 @@ from reports.views import *
 urlpatterns = [
     path('otp/', authviews.otp, name='OTP'),
     path('update/', update_sr_doctor_details, name='update_sr_doctor_details'),
+    path('register/', add_srDoctor_details, name='add_srDoctor_details'),
 
     path('patient_administration_details/update/', update_patient_admin_details, name='update_patient_admin_details'),
     path('patient_microbiology_details/update/', update_microbiology_details, name='update_microbiology_details'),
