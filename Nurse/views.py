@@ -221,7 +221,6 @@ def add_nurse_details(request, *args, **kwargs):
         return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
 
 
-
 @csrf_exempt
 @require_http_methods(["POST"])
 def add_patient_administration_details(request, *args, **kwargs):
@@ -235,59 +234,129 @@ def add_patient_administration_details(request, *args, **kwargs):
         form = PatientAdministrationForm(decoded_body)
 
         if not form.is_valid():
-            return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": form.errors})
-
+            log.error(f'{LOG_PREFIX}, "FormErrors":"{form.errors.as_json()}"')
+            return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": form.errors.as_json()})
 
         patient_id = 'P_' + ''.join(random.choices('0123456789ABCDEF', k=16))
 
         request.session['patient_id'] = patient_id
         request.session['form1_completed'] = True
         log.info("PATIENT ID :%s" % patient_id)
-        request.session.modified = True  # Mark session as modified to ensure saving
+        request.session.modified = True
 
         data_dict = {
             'patient_id': patient_id,
-            'patientName': decoded_body.get('patientName'),
-            'age': decoded_body.get('age'),
-            'gender': decoded_body.get('gender'),
-            'patientOnSteroids': decoded_body.get('patientOnSteroids'),
-            'diabeticPatient': decoded_body.get('diabeticPatient'),
-            'weight': decoded_body.get('weight'),
-            'height': decoded_body.get('height'),
-            'bmi': decoded_body.get('bmi'),
-            'alcoholConsumption': decoded_body.get('alcoholConsumption'),
-            'tobaccoConsumption': decoded_body.get('tobaccoConsumption'),
-            'lengthOfSurgery': decoded_body.get('lengthOfSurgery'),
-            'dateOfAdmission': decoded_body.get('dateOfAdmission'),
-            'dateOfProcedure': decoded_body.get('dateOfProcedure'),
-            'admittingDepartment': decoded_body.get('admittingDepartment'),
-            'departmentPrimarySurgeon': decoded_body.get('departmentPrimarySurgeon'),
-            'procedureName': decoded_body.get('procedureName'),
-            'diagnosis': decoded_body.get('diagnosis'),
-            'procedureDoneBy': decoded_body.get('procedureDoneBy'),
-            'operationTheatre': decoded_body.get('operationTheatre'),
-            'outpatientProcedure': decoded_body.get('outpatientProcedure'),
-            'scenarioProcedure': decoded_body.get('scenarioProcedure'),
-            'woundClass': decoded_body.get('woundClass'),
-            'papGiven': decoded_body.get('papGiven'),
-            'antibioticsGiven': decoded_body.get('antibioticsGiven'),
-            'durationPAP': decoded_body.get('durationPAP'),
-            'ssiEventOccurred': decoded_body.get('ssiEventOccurred'),
-            'dateOfEvent': decoded_body.get('dateOfEvent')
+            'patientName': form.cleaned_data['patientName'],
+            'age': form.cleaned_data['age'],
+            'gender': form.cleaned_data['gender'],
+            'patientOnSteroids': form.cleaned_data['patientOnSteroids'],
+            'diabeticPatient': form.cleaned_data['diabeticPatient'],
+            # 'weight': form.cleaned_data['weight'],
+            # 'height': form.cleaned_data['height'],
+            'bmi': form.cleaned_data['bmi'],
+            'alcoholConsumption': form.cleaned_data['alcoholConsumption'],
+            'tobaccoConsumption': form.cleaned_data['tobaccoConsumption'],
+            'lengthOfSurgery': form.cleaned_data['lengthOfSurgery'],
+            'dateOfAdmission': form.cleaned_data['dateOfAdmission'],
+            'dateOfProcedure': form.cleaned_data['dateOfProcedure'],
+            'admittingDepartment': form.cleaned_data['admittingDepartment'],
+            'departmentPrimarySurgeon': form.cleaned_data['departmentPrimarySurgeon'],
+            'procedureName': form.cleaned_data['procedureName'],
+            'diagnosis': form.cleaned_data['diagnosis'],
+            'procedureDoneBy': form.cleaned_data['procedureDoneBy'],
+            'operationTheatre': form.cleaned_data['operationTheatre'],
+            'outpatientProcedure': form.cleaned_data['outpatientProcedure'],
+            'scenarioProcedure': form.cleaned_data['scenarioProcedure'],
+            'woundClass': form.cleaned_data['woundClass'],
+            'papGiven': form.cleaned_data['papGiven'],
+            'antibioticsGiven': form.cleaned_data['antibioticsGiven'],
+            'durationPAP': form.cleaned_data['durationPAP'],
+            'ssiEventOccurred': form.cleaned_data['ssiEventOccurred'],
+            'dateOfEvent': form.cleaned_data['dateOfEvent'],
         }
 
         insert_patient = cls_nurse._add_patient_administration_details(LOG_PREFIX, data=data_dict)
-        log.info("INSERT PATIENT ADMINISTRATION DETAILS :%s" % insert_patient)
+        log.info(f'{LOG_PREFIX}, "InsertResult":"{insert_patient}"')
 
         if insert_patient:
             return JsonResponse(
                 {"status": "SUCCESS", "statuscode": 200, "msg": "Patient administration details added successfully!"})
         else:
-            return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Failed to add patient admininstration details!"})
+            log.error(f'{LOG_PREFIX}, "InsertFailed":"No details added"')
+            return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Failed to add patient administration details!"})
 
     except Exception as e:
-        log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
-        return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
+        log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{str(e)}"')
+        return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": f"Internal Server Error: {str(e)}"})
+
+#WORKINGGGGG VIEWWW
+#
+# @csrf_exempt
+# @require_http_methods(["POST"])
+# def add_patient_administration_details(request, *args, **kwargs):
+#     EVENT = "AddPatientAdministration"
+#     IP = client_ip(request)
+#     LOG_PREFIX = f'"EventName":"{EVENT}", "IP":"{IP}"'
+#     cls_nurse = Nurse()
+#
+#     try:
+#         decoded_body = json.loads((request.body).decode())
+#         form = PatientAdministrationForm(decoded_body)
+#
+#         if not form.is_valid():
+#             return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": form.errors})
+#
+#
+#         patient_id = 'P_' + ''.join(random.choices('0123456789ABCDEF', k=16))
+#
+#         request.session['patient_id'] = patient_id
+#         request.session['form1_completed'] = True
+#         log.info("PATIENT ID :%s" % patient_id)
+#         request.session.modified = True  # Mark session as modified to ensure saving
+#
+#         data_dict = {
+#             'patient_id': patient_id,
+#             'patientName': decoded_body.get('patientName'),
+#             'age': decoded_body.get('age'),
+#             'gender': decoded_body.get('gender'),
+#             'patientOnSteroids': decoded_body.get('patientOnSteroids'),
+#             'diabeticPatient': decoded_body.get('diabeticPatient'),
+#             'weight': decoded_body.get('weight'),
+#             'height': decoded_body.get('height'),
+#             'bmi': decoded_body.get('bmi'),
+#             'alcoholConsumption': decoded_body.get('alcoholConsumption'),
+#             'tobaccoConsumption': decoded_body.get('tobaccoConsumption'),
+#             'lengthOfSurgery': decoded_body.get('lengthOfSurgery'),
+#             'dateOfAdmission': decoded_body.get('dateOfAdmission'),
+#             'dateOfProcedure': decoded_body.get('dateOfProcedure'),
+#             'admittingDepartment': decoded_body.get('admittingDepartment'),
+#             'departmentPrimarySurgeon': decoded_body.get('departmentPrimarySurgeon'),
+#             'procedureName': decoded_body.get('procedureName'),
+#             'diagnosis': decoded_body.get('diagnosis'),
+#             'procedureDoneBy': decoded_body.get('procedureDoneBy'),
+#             'operationTheatre': decoded_body.get('operationTheatre'),
+#             'outpatientProcedure': decoded_body.get('outpatientProcedure'),
+#             'scenarioProcedure': decoded_body.get('scenarioProcedure'),
+#             'woundClass': decoded_body.get('woundClass'),
+#             'papGiven': decoded_body.get('papGiven'),
+#             'antibioticsGiven': decoded_body.get('antibioticsGiven'),
+#             'durationPAP': decoded_body.get('durationPAP'),
+#             'ssiEventOccurred': decoded_body.get('ssiEventOccurred'),
+#             'dateOfEvent': decoded_body.get('dateOfEvent')
+#         }
+#
+#         insert_patient = cls_nurse._add_patient_administration_details(LOG_PREFIX, data=data_dict)
+#         log.info("INSERT PATIENT ADMINISTRATION DETAILS :%s" % insert_patient)
+#
+#         if insert_patient:
+#             return JsonResponse(
+#                 {"status": "SUCCESS", "statuscode": 200, "msg": "Patient administration details added successfully!"})
+#         else:
+#             return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Failed to add patient admininstration details!"})
+#
+#     except Exception as e:
+#         log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
+#         return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
 
 ##Without prediction
 # @csrf_exempt
@@ -460,9 +529,10 @@ def add_patient_administration_details(request, *args, **kwargs):
 #         log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
 #         return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
 
+
 @csrf_exempt
 @require_http_methods(["POST"])
-def add_microbiology_details(request, *args, **kwargs):
+def add_microbiology_details(request):
     EVENT = "AddMicrobiologyDetails"
     IP = client_ip(request)
     LOG_PREFIX = f'"EventName":"{EVENT}", "IP":"{IP}"'
@@ -471,13 +541,16 @@ def add_microbiology_details(request, *args, **kwargs):
     try:
         patient_id = request.session.get('patient_id')
         request.session['form2_completed'] = True
-        log.info("PATIENT ID :%s" % patient_id)
         request.session.modified = True
+        log.info("PATIENT ID :%s" % patient_id)
 
         if not patient_id:
-            return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": "Patient ID not found in session!"})
+            return JsonResponse({
+                "status": "FAILURE", "statuscode": 400,
+                "msg": "Patient ID not found in session!"
+            })
 
-        # Loading the SSI_model machine learning model
+        # Load ML model
         model_path = os.path.join(os.path.dirname(__file__), 'ml_model', 'SSI_model.pkl')
         with open(model_path, 'rb') as model_file:
             model = pickle.load(model_file)
@@ -488,50 +561,47 @@ def add_microbiology_details(request, *args, **kwargs):
         if not form.is_valid():
             return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": form.errors})
 
+        cleaned = form.cleaned_data
         data_dict = {
             'patient_id': patient_id,
-            'micro_organism': decoded_body.get('micro_organism'),
+            'micro_organism': cleaned.get('micro_organism'),
             'antibiotic': [],
             'prediction': None
         }
 
         features = [
-            decoded_body.get('Ecoli', 0),
-            decoded_body.get('Cefuroxime', 0),
-            decoded_body.get('Cefuroxime_MIC', 68),
-            decoded_body.get('Resistant', 0),
-            decoded_body.get('Cefepime', 0),
-            decoded_body.get('Cefepime_MIC', 8),
-            decoded_body.get('Susceptibility_Dose_Dependent', 0),
-            decoded_body.get('Cefoperazone_Sulbactum', 0),
-            decoded_body.get('Cefoperazone_Sulbactum_MIC', 32),
-            decoded_body.get('Intermediate', 0),
-            decoded_body.get('Gentamicin', 0),
-            decoded_body.get('Gentamicin_MIC', 0.032),
-            decoded_body.get('Sensitive', 0)
+            cleaned.get('Ecoli', 0),
+            cleaned.get('Cefuroxime', 0),
+            cleaned.get('Cefuroxime_MIC', 68),
+            cleaned.get('Resistant', 0),
+            cleaned.get('Cefepime', 0),
+            cleaned.get('Cefepime_MIC', 8),
+            cleaned.get('Susceptibility_Dose_Dependent', 0),
+            cleaned.get('Cefoperazone_Sulbactum', 0),
+            cleaned.get('Cefoperazone_Sulbactum_MIC', 32),
+            cleaned.get('Intermediate', 0),
+            cleaned.get('Gentamicin', 0),
+            cleaned.get('Gentamicin_MIC', 0.032),
+            cleaned.get('Sensitive', 0)
         ]
 
         log.info(f"{LOG_PREFIX}, 'Step':'ML Prediction', 'Features':{features}")
 
-        # Make prediction with the SSI_model
         prediction = model.predict([features])[0]
-        data_dict['prediction'] = prediction  # Store prediction in data_dict
-        log.info(f"{LOG_PREFIX}, 'Step':'ML Prediction', 'Prediction':{prediction}")
+        data_dict['prediction'] = prediction
+        log.info(f"{LOG_PREFIX}, 'Prediction':{prediction}")
 
         # Process antibiotics
         for antibiotic in ANTIBIOTIC_CHOICES:
-            antibiotic_name = antibiotic[0]
-            antibiotic_key = antibiotic_name.lower().replace(' ', '_').replace('-', '_')
+            name = antibiotic[0]
+            key = name.lower().replace(' ', '_').replace('-', '_')
+            mic = cleaned.get(f"{key}_mic")
+            interpretation = cleaned.get(f"{key}_interpretation")
 
-            mic_value = decoded_body.get(f"{antibiotic_key}_mic")
-            interpretation = decoded_body.get(f"{antibiotic_key}_interpretation")
-
-            log.info(f"Antibiotic: {antibiotic_name}, MIC: {mic_value}, Interpretation: {interpretation}")
-
-            if mic_value or interpretation:
+            if mic or interpretation:
                 data_dict['antibiotic'].append({
-                    'name': antibiotic_name,
-                    'mic_value': mic_value if mic_value else None,
+                    'name': name,
+                    'mic_value': mic if mic else None,
                     'interpretation': interpretation if interpretation else None
                 })
 
@@ -542,22 +612,122 @@ def add_microbiology_details(request, *args, **kwargs):
                 'interpretation': None
             })
 
-        log.info(f"{LOG_PREFIX}, 'Step':'Data Preparation', 'DataDict':{data_dict}")
+        log.info(f"{LOG_PREFIX}, 'DataDict':{data_dict}")
 
-        # Insert microbiology details, including prediction
-        insert_microbiology_details = cls_nurse._add_microbiology_details(LOG_PREFIX, data=data_dict)
-        log.info(f"{LOG_PREFIX}, 'Result':'Inserted Microbiology Details', 'Details':{insert_microbiology_details}")
+        insert_result = cls_nurse._add_microbiology_details(LOG_PREFIX, data=data_dict)
 
-        if insert_microbiology_details:
-            return JsonResponse(
-                {"status": "SUCCESS", "statuscode": 200, "msg": "Patient's Microbiology details added successfully!"})
+        if insert_result:
+            return JsonResponse({"status": "SUCCESS", "statuscode": 200,
+                                 "msg": "Patient's Microbiology details added successfully!"})
         else:
-            return JsonResponse(
-                {"status": "FAILURE", "statuscode": 500, "msg": "Failed to add patient's microbiology details!"})
+            return JsonResponse({"status": "FAILURE", "statuscode": 500,
+                                 "msg": "Failed to add patient's microbiology details!"})
 
     except Exception as e:
         log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
-        return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
+        return JsonResponse({"status": "FAILURE", "statuscode": 500,
+                             "msg": "Internal Server Error!"})
+
+
+#WORKINGGGGG VIEWWW
+# @csrf_exempt
+# @require_http_methods(["POST"])
+# def add_microbiology_details(request, *args, **kwargs):
+#     EVENT = "AddMicrobiologyDetails"
+#     IP = client_ip(request)
+#     LOG_PREFIX = f'"EventName":"{EVENT}", "IP":"{IP}"'
+#     cls_nurse = Nurse()
+#
+#     try:
+#         patient_id = request.session.get('patient_id')
+#         request.session['form2_completed'] = True
+#         log.info("PATIENT ID :%s" % patient_id)
+#         request.session.modified = True
+#
+#         if not patient_id:
+#             return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": "Patient ID not found in session!"})
+#
+#         # Loading the SSI_model machine learning model
+#         model_path = os.path.join(os.path.dirname(__file__), 'ml_model', 'SSI_model.pkl')
+#         with open(model_path, 'rb') as model_file:
+#             model = pickle.load(model_file)
+#
+#         decoded_body = json.loads(request.body.decode())
+#         form = MicrobiologyForm(decoded_body)
+#
+#         if not form.is_valid():
+#             return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": form.errors})
+#
+#         data_dict = {
+#             'patient_id': patient_id,
+#             'micro_organism': decoded_body.get('micro_organism'),
+#             'antibiotic': [],
+#             'prediction': None
+#         }
+#
+#         features = [
+#             decoded_body.get('Ecoli', 0),
+#             decoded_body.get('Cefuroxime', 0),
+#             decoded_body.get('Cefuroxime_MIC', 68),
+#             decoded_body.get('Resistant', 0),
+#             decoded_body.get('Cefepime', 0),
+#             decoded_body.get('Cefepime_MIC', 8),
+#             decoded_body.get('Susceptibility_Dose_Dependent', 0),
+#             decoded_body.get('Cefoperazone_Sulbactum', 0),
+#             decoded_body.get('Cefoperazone_Sulbactum_MIC', 32),
+#             decoded_body.get('Intermediate', 0),
+#             decoded_body.get('Gentamicin', 0),
+#             decoded_body.get('Gentamicin_MIC', 0.032),
+#             decoded_body.get('Sensitive', 0)
+#         ]
+#
+#         log.info(f"{LOG_PREFIX}, 'Step':'ML Prediction', 'Features':{features}")
+#
+#         # Make prediction with the SSI_model
+#         prediction = model.predict([features])[0]
+#         data_dict['prediction'] = prediction  # Store prediction in data_dict
+#         log.info(f"{LOG_PREFIX}, 'Step':'ML Prediction', 'Prediction':{prediction}")
+#
+#         # Process antibiotics
+#         for antibiotic in ANTIBIOTIC_CHOICES:
+#             antibiotic_name = antibiotic[0]
+#             antibiotic_key = antibiotic_name.lower().replace(' ', '_').replace('-', '_')
+#
+#             mic_value = decoded_body.get(f"{antibiotic_key}_mic")
+#             interpretation = decoded_body.get(f"{antibiotic_key}_interpretation")
+#
+#             log.info(f"Antibiotic: {antibiotic_name}, MIC: {mic_value}, Interpretation: {interpretation}")
+#
+#             if mic_value or interpretation:
+#                 data_dict['antibiotic'].append({
+#                     'name': antibiotic_name,
+#                     'mic_value': mic_value if mic_value else None,
+#                     'interpretation': interpretation if interpretation else None
+#                 })
+#
+#         if not data_dict['antibiotic']:
+#             data_dict['antibiotic'].append({
+#                 'name': 'No antibiotic data provided',
+#                 'mic_value': None,
+#                 'interpretation': None
+#             })
+#
+#         log.info(f"{LOG_PREFIX}, 'Step':'Data Preparation', 'DataDict':{data_dict}")
+#
+#         # Insert microbiology details, including prediction
+#         insert_microbiology_details = cls_nurse._add_microbiology_details(LOG_PREFIX, data=data_dict)
+#         log.info(f"{LOG_PREFIX}, 'Result':'Inserted Microbiology Details', 'Details':{insert_microbiology_details}")
+#
+#         if insert_microbiology_details:
+#             return JsonResponse(
+#                 {"status": "SUCCESS", "statuscode": 200, "msg": "Patient's Microbiology details added successfully!"})
+#         else:
+#             return JsonResponse(
+#                 {"status": "FAILURE", "statuscode": 500, "msg": "Failed to add patient's microbiology details!"})
+#
+#     except Exception as e:
+#         log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
+#         return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
 
 
 @csrf_exempt
@@ -633,9 +803,9 @@ def add_antibiotic_surveillance(request, *args, **kwargs):
             # 'route_post_6': decoded_body.get('route_post_6'),
             # 'duration_post_6': decoded_body.get('duration_post_6'),
             # 'doses_post_6': decoded_body.get('doses_post_6'),
-            'time_induction': decoded_body.get('time_induction'),
-            'time_incision': decoded_body.get('time_incision'),
-            'time_end_surgery': decoded_body.get('time_end_surgery')
+            'time_induction': form.cleaned_data['time_induction'],
+            'time_incision': form.cleaned_data['time_incision'],
+            'time_end_surgery': form.cleaned_data['time_end_surgery']
         }
         insert_antibiotic_surveillance_details = cls_nurse._add_antibiotic_surveillance(LOG_PREFIX, data=data_dict)
         log.info("INSERT PATIENT ADMINISTRATION DETAILS :%s" % insert_antibiotic_surveillance_details)
@@ -649,6 +819,95 @@ def add_antibiotic_surveillance(request, *args, **kwargs):
         log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
         return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
 
+# WORKING VIEWWWWWW
+# @csrf_exempt
+# @require_http_methods(["POST"])
+# def add_antibiotic_surveillance(request, *args, **kwargs):
+#     EVENT = "AddAntibioticSurveillanceDetails"
+#     IP = client_ip(request)
+#     LOG_PREFIX = f'"EventName":"{EVENT}", "IP":"{IP}"'
+#     cls_nurse = Nurse()
+#
+#     try:
+#         patient_id = request.session.get('patient_id')
+#         log.info("PATIENT ID :%s" % patient_id)
+#         request.session['form3_completed'] = True
+#         request.session.modified = True
+#
+#         if not patient_id:
+#             return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": "Patient ID not found in session!"})
+#
+#         decoded_body = json.loads((request.body).decode())
+#         form = AntibioticSurveillanceForm(decoded_body)
+#
+#         if not form.is_valid():
+#             return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": form.errors})
+#
+#         data_dict = {
+#             'patient_id': patient_id,
+#             # 'antibiotic_prior_1': decoded_body.get('antibiotic_prior_1'),
+#             # 'route_prior_1': decoded_body.get('route_prior_1'),
+#             # 'duration_prior_1': decoded_body.get('duration_prior_1'),
+#             # 'doses_prior_1': decoded_body.get('doses_prior_1'),
+#             # 'antibiotic_prior_2': decoded_body.get('antibiotic_prior_2'),
+#             # 'route_prior_2': decoded_body.get('route_prior_2'),
+#             # 'duration_prior_2': decoded_body.get('duration_prior_2'),
+#             # 'doses_prior_2': decoded_body.get('doses_prior_2'),
+#             # 'antibiotic_prior_3': decoded_body.get('antibiotic_prior_3'),
+#             # 'route_prior_3': decoded_body.get('route_prior_3'),
+#             # 'duration_prior_3' : decoded_body.get('duration_prior_3'),
+#             # 'doses_prior_3': decoded_body.get('doses_prior_3'),
+#             # 'antibiotic_pre_1': decoded_body.get('antibiotic_pre_1'),
+#             # 'route_pre_1': decoded_body.get('route_pre_1'),
+#             # 'duration_pre_1': decoded_body.get('duration_pre_1'),
+#             # 'doses_pre_1': decoded_body.get('doses_pre_1'),
+#             # 'antibiotic_pre_2': decoded_body.get('antibiotic_pre_2'),
+#             # 'route_pre_2': decoded_body.get('route_pre_2'),
+#             # 'duration_pre_2': decoded_body.get('duration_pre_2'),
+#             # 'doses_pre_2' : decoded_body.get('doses_pre_2'),
+#             # 'antibiotic_pre_3': decoded_body.get('antibiotic_pre_3'),
+#             # 'route_pre_3': decoded_body.get('route_pre_3'),
+#             # 'duration_pre_3': decoded_body.get('duration_pre_3'),
+#             # 'doses_pre_3': decoded_body.get('doses_pre_3'),
+#             # 'antibiotic_post_1': decoded_body.get('antibiotic_post_1'),
+#             # 'route_post_1': decoded_body.get('route_post_1'),
+#             # 'duration_post_1': decoded_body.get('duration_post_1'),
+#             # 'doses_post_1': decoded_body.get('doses_post_1'),
+#             # 'antibiotic_post_2': decoded_body.get('antibiotic_post_2'),
+#             # 'route_post_2': decoded_body.get('route_post_2'),
+#             # 'duration_post_2': decoded_body.get('duration_post_2'),
+#             # 'doses_post_2': decoded_body.get('doses_post_2'),
+#             # 'antibiotic_post_3': decoded_body.get('antibiotic_post_3'),
+#             # 'route_post_3': decoded_body.get('route_post_3'),
+#             # 'duration_post_3': decoded_body.get('duration_post_3'),
+#             # 'doses_post_3': decoded_body.get('doses_post_3'),
+#             # 'antibiotic_post_4': decoded_body.get('antibiotic_post_4'),
+#             # 'route_post_4': decoded_body.get('route_post_4'),
+#             # 'duration_post_4': decoded_body.get('duration_post_4'),
+#             # 'doses_post_4': decoded_body.get('doses_post_4'),
+#             # 'antibiotic_post_5': decoded_body.get('antibiotic_post_5'),
+#             # 'route_post_5': decoded_body.get('route_post_5'),
+#             # 'duration_post_5': decoded_body.get('duration_post_5'),
+#             # 'doses_post_5': decoded_body.get('doses_post_5'),
+#             # 'antibiotic_post_6': decoded_body.get('antibiotic_post_6'),
+#             # 'route_post_6': decoded_body.get('route_post_6'),
+#             # 'duration_post_6': decoded_body.get('duration_post_6'),
+#             # 'doses_post_6': decoded_body.get('doses_post_6'),
+#             'time_induction': decoded_body.get('time_induction'),
+#             'time_incision': decoded_body.get('time_incision'),
+#             'time_end_surgery': decoded_body.get('time_end_surgery')
+#         }
+#         insert_antibiotic_surveillance_details = cls_nurse._add_antibiotic_surveillance(LOG_PREFIX, data=data_dict)
+#         log.info("INSERT PATIENT ADMINISTRATION DETAILS :%s" % insert_antibiotic_surveillance_details)
+#
+#         if insert_antibiotic_surveillance_details:
+#             return JsonResponse({"status": "SUCCESS", "statuscode": 200, "msg": "Patient's Antibiotic Surveillance details added successfully!"})
+#         else:
+#             return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Failed to add Patient's Antibiotic Surveillance details!"})
+#
+#     except Exception as e:
+#         log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
+#         return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -659,44 +918,49 @@ def add_post_surgery_details(request, *args, **kwargs):
     cls_nurse = Nurse()
 
     try:
-        patient_id = request.session.get('patient_id')
-        log.info("PATIENT ID :%s" % patient_id)
-        request.session['form4_completed'] = True
-        request.session.modified = True
-
-        if not patient_id:
-            return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": "Patient ID not found in session!"})
-
         decoded_body = json.loads(request.body.decode())
         form = PostOpDayForm(decoded_body)
 
         if not form.is_valid():
-            return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": form.errors})
+            log.error(f'{LOG_PREFIX}, "FormErrors":"{form.errors.as_json()}"')
+            return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": form.errors.as_json()})
 
+        patient_id = request.session.get('patient_id')
+        request.session['form4_completed'] = True
+        request.session.modified = True
+        log.info("PATIENT ID :%s" % patient_id)
+
+        if not patient_id:
+            return JsonResponse({
+                "status": "FAILURE", "statuscode": 400,
+                "msg": "Patient ID not found in session!"
+            })
+
+        cleaned = form.cleaned_data
         data_dict = {
             'patient_id': patient_id,
-            'date_of_procedure': decoded_body.get('date_of_procedure'),
-            'name_of_procedure': decoded_body.get('name_of_procedure'),
-            'symptoms': [],
+            'date_of_procedure': cleaned.get('date_of_procedure'),
+            'name_of_procedure': cleaned.get('name_of_procedure'),
+            'symptoms': []
         }
 
-        symptoms = decoded_body.get('symptoms', [])
+        symptoms = cleaned.get('symptoms', [])
         for symptom_data in symptoms:
             if not isinstance(symptom_data, dict):
-                log.error(f"{LOG_PREFIX} - Invalid symptom data structure: {symptom_data}")
+                log.error(f"{LOG_PREFIX}, 'InvalidSymptomStructure':'{symptom_data}'")
                 continue
 
             symptom_name = symptom_data.get('symptom', 'No symptom data provided')
             symptom_days = symptom_data.get('days', [])
 
             if not isinstance(symptom_days, list):
-                log.error(f"{LOG_PREFIX} - Invalid days data structure for symptom: {symptom_name}")
+                log.error(f"{LOG_PREFIX}, 'InvalidDaysStructure':'{symptom_name}'")
                 continue
 
             days_list = []
             for day_entry in symptom_days:
                 if not isinstance(day_entry, dict):
-                    log.error(f"{LOG_PREFIX} - Invalid day entry: {day_entry}")
+                    log.error(f"{LOG_PREFIX}, 'InvalidDayEntry':'{day_entry}'")
                     continue
 
                 day = day_entry.get('day')
@@ -712,24 +976,117 @@ def add_post_surgery_details(request, *args, **kwargs):
                 })
 
         if not data_dict['symptoms']:
-            log.info(f"{LOG_PREFIX} - No symptoms data provided. Adding placeholder entry.")
+            log.info(f"{LOG_PREFIX}, 'Info':'No symptoms data provided. Adding placeholder.'")
             data_dict['symptoms'].append({
                 'symptom': 'No symptom data provided',
                 'days': []
             })
 
-        log.info(f"Data to insert into _add_post_op_details: {data_dict}")
+        log.info(f'{LOG_PREFIX}, "PreparedData":"{data_dict}"')
 
         insert_post_op_details = cls_nurse._add_post_op_details(LOG_PREFIX, data=data_dict)
+        log.info(f'{LOG_PREFIX}, "InsertResult":"{insert_post_op_details}"')
 
         if insert_post_op_details:
-            return JsonResponse({"status": "SUCCESS", "statuscode": 200, "msg": "Post-surgery details added successfully!"})
+            return JsonResponse({
+                "status": "SUCCESS", "statuscode": 200,
+                "msg": "Post-surgery details added successfully!"
+            })
         else:
-            return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Failed to add post-surgery details!"})
+            return JsonResponse({
+                "status": "FAILURE", "statuscode": 500,
+                "msg": "Failed to add post-surgery details!"
+            })
 
     except Exception as e:
-        log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
-        return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
+        log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{str(e)}"')
+        return JsonResponse({
+            "status": "FAILURE", "statuscode": 500,
+            "msg": f"Internal Server Error: {str(e)}"
+        })
+
+
+# WORKING VIEWWWWWW
+# @csrf_exempt
+# @require_http_methods(["POST"])
+# def add_post_surgery_details(request, *args, **kwargs):
+#     EVENT = "AddPostSurgeryDetails"
+#     IP = client_ip(request)
+#     LOG_PREFIX = f'"EventName":"{EVENT}", "IP":"{IP}"'
+#     cls_nurse = Nurse()
+#
+#     try:
+#         patient_id = request.session.get('patient_id')
+#         log.info("PATIENT ID :%s" % patient_id)
+#         request.session['form4_completed'] = True
+#         request.session.modified = True
+#
+#         if not patient_id:
+#             return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": "Patient ID not found in session!"})
+#
+#         decoded_body = json.loads(request.body.decode())
+#         form = PostOpDayForm(decoded_body)
+#
+#         if not form.is_valid():
+#             return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": form.errors})
+#
+#         data_dict = {
+#             'patient_id': patient_id,
+#             'date_of_procedure': decoded_body.get('date_of_procedure'),
+#             'name_of_procedure': decoded_body.get('name_of_procedure'),
+#             'symptoms': [],
+#         }
+#
+#         symptoms = decoded_body.get('symptoms', [])
+#         for symptom_data in symptoms:
+#             if not isinstance(symptom_data, dict):
+#                 log.error(f"{LOG_PREFIX} - Invalid symptom data structure: {symptom_data}")
+#                 continue
+#
+#             symptom_name = symptom_data.get('symptom', 'No symptom data provided')
+#             symptom_days = symptom_data.get('days', [])
+#
+#             if not isinstance(symptom_days, list):
+#                 log.error(f"{LOG_PREFIX} - Invalid days data structure for symptom: {symptom_name}")
+#                 continue
+#
+#             days_list = []
+#             for day_entry in symptom_days:
+#                 if not isinstance(day_entry, dict):
+#                     log.error(f"{LOG_PREFIX} - Invalid day entry: {day_entry}")
+#                     continue
+#
+#                 day = day_entry.get('day')
+#                 status = day_entry.get('status', 'Empty')
+#
+#                 if day and status != 'Empty':
+#                     days_list.append({'day': day, 'status': status})
+#
+#             if days_list:
+#                 data_dict['symptoms'].append({
+#                     'symptom': symptom_name,
+#                     'days': days_list
+#                 })
+#
+#         if not data_dict['symptoms']:
+#             log.info(f"{LOG_PREFIX} - No symptoms data provided. Adding placeholder entry.")
+#             data_dict['symptoms'].append({
+#                 'symptom': 'No symptom data provided',
+#                 'days': []
+#             })
+#
+#         log.info(f"Data to insert into _add_post_op_details: {data_dict}")
+#
+#         insert_post_op_details = cls_nurse._add_post_op_details(LOG_PREFIX, data=data_dict)
+#
+#         if insert_post_op_details:
+#             return JsonResponse({"status": "SUCCESS", "statuscode": 200, "msg": "Post-surgery details added successfully!"})
+#         else:
+#             return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Failed to add post-surgery details!"})
+#
+#     except Exception as e:
+#         log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
+#         return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
 
 
 @csrf_exempt
@@ -742,52 +1099,137 @@ def add_ssi_evaluation_details(request, *args, **kwargs):
 
     try:
         patient_id = request.session.get('patient_id')
-        log.info("PATIENT ID :%s" % patient_id)
         request.session['form5_completed'] = True
         request.session.modified = True
+        log.info("PATIENT ID :%s" % patient_id)
 
         if not patient_id:
-            return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": "Patient ID not found in session!"})
+            return JsonResponse({
+                "status": "FAILURE", "statuscode": 400,
+                "msg": "Patient ID not found in session!"
+            })
 
         decoded_body = json.loads(request.body.decode())
         form = SSIEvaluationForm(decoded_body)
 
         if not form.is_valid():
-            return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": form.errors})
+            log.error(f'{LOG_PREFIX}, "FormErrors":"{form.errors.as_json()}"')
+            return JsonResponse({
+                "status": "FAILURE", "statuscode": 400,
+                "msg": form.errors.as_json()
+            })
 
+        cleaned = form.cleaned_data
         data_dict = {
             'patient_id': patient_id,
-            'procedure_name': decoded_body.get('procedure_name'),
-            'patient_name': decoded_body.get('patient_name'),
-            'age': decoded_body.get('age'),
-            'gender': decoded_body.get('gender'),
-            'date_of_procedure': decoded_body.get('date_of_procedure'),
-            'evaluation_fields': {},
+            'procedure_name': cleaned['procedure_name'],
+            'patient_name': cleaned['patient_name'],
+            'age': cleaned['age'],
+            'gender': cleaned['gender'],
+            'date_of_procedure': cleaned['date_of_procedure'],
+            'evaluation_fields': {}
         }
 
-        # Extract evaluation fields and their remarks
         for field in SSIEvaluationForm.dynamic_fields:
             choice_key = f"{field}_choice"
             remarks_key = f"{field}_remarks"
-
             data_dict['evaluation_fields'][field] = {
-                'choice': decoded_body.get(choice_key),
-                'remarks': decoded_body.get(remarks_key),
+                'choice': cleaned[choice_key],
+                'remarks': cleaned[remarks_key]
             }
 
-        log.info(f"{LOG_PREFIX} - Successfully extracted SSI evaluation data: {data_dict}")
+        log.info(f'{LOG_PREFIX}, "PreparedData":"{data_dict}"')
 
-        # Insert the extracted data into the system
         insert_ssi_evaluation_details = cls_nurse._add_ssi_evaluation(LOG_PREFIX, data=data_dict)
+        log.info(f'{LOG_PREFIX}, "InsertResult":"{insert_ssi_evaluation_details}"')
 
         if insert_ssi_evaluation_details:
-            return JsonResponse({"status": "SUCCESS", "statuscode": 200, "msg": "SSI evaluation details added successfully!"})
+            return JsonResponse({
+                "status": "SUCCESS", "statuscode": 200,
+                "msg": "SSI evaluation details added successfully!"
+            })
         else:
-            return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Failed to add SSI evaluation details!"})
+            log.error(f'{LOG_PREFIX}, "InsertFailed":"No details added"')
+            return JsonResponse({
+                "status": "FAILURE", "statuscode": 500,
+                "msg": "Failed to add SSI evaluation details!"
+            })
 
     except Exception as e:
-        log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
-        return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
+        log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{str(e)}"')
+        return JsonResponse({
+            "status": "FAILURE", "statuscode": 500,
+            "msg": f"Internal Server Error: {str(e)}"
+        })
+
+
+# WORKING VIEWW
+# @csrf_exempt
+# @require_http_methods(["POST"])
+# def add_ssi_evaluation_details(request, *args, **kwargs):
+#     EVENT = "AddSSIEvaluationDetails"
+#     IP = client_ip(request)
+#     LOG_PREFIX = f'"EventName":"{EVENT}", "IP":"{IP}"'
+#     cls_nurse = Nurse()
+#
+#     try:
+#         patient_id = request.session.get('patient_id')
+#         log.info("PATIENT ID :%s" % patient_id)
+#         request.session['form5_completed'] = True
+#         request.session.modified = True
+#
+#         if not patient_id:
+#             return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": "Patient ID not found in session!"})
+#
+#         decoded_body = json.loads(request.body.decode())
+#         form = SSIEvaluationForm(decoded_body)
+#
+#         if not form.is_valid():
+#             return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": form.errors})
+#
+#         data_dict = {
+#             'patient_id': patient_id,
+#             'procedure_name': decoded_body.get('procedure_name'),
+#             'patient_name': decoded_body.get('patient_name'),
+#             'age': decoded_body.get('age'),
+#             'gender': decoded_body.get('gender'),
+#             'date_of_procedure': decoded_body.get('date_of_procedure'),
+#             'evaluation_fields': {},
+#         }
+#
+#         data_dict = {
+#             'patient_id': patient_id,
+#             'procedure_name': form.cleaned_data['procedure_name'],
+#             'patient_name': form.cleaned_data['patient_name'],
+#             'age': form.cleaned_data['age'],
+#             'gender': form.cleaned_data['gender'],
+#             'date_of_procedure': form.cleaned_data['date_of_procedure'],
+#             'evaluation_fields': {},
+#         }
+#
+#         # Extract evaluation fields and their remarks
+#         for field in SSIEvaluationForm.dynamic_fields:
+#             choice_key = f"{field}_choice"
+#             remarks_key = f"{field}_remarks"
+#
+#             data_dict['evaluation_fields'][field] = {
+#                 'choice': form.cleaned_data[choice_key],
+#                 'remarks': form.cleaned_data[remarks_key],
+#             }
+#
+#         log.info(f"{LOG_PREFIX} - Successfully extracted SSI evaluation data: {data_dict}")
+#
+#         # Insert the extracted data into the system
+#         insert_ssi_evaluation_details = cls_nurse._add_ssi_evaluation(LOG_PREFIX, data=data_dict)
+#
+#         if insert_ssi_evaluation_details:
+#             return JsonResponse({"status": "SUCCESS", "statuscode": 200, "msg": "SSI evaluation details added successfully!"})
+#         else:
+#             return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Failed to add SSI evaluation details!"})
+#
+#     except Exception as e:
+#         log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
+#         return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
 
 
 @csrf_exempt
@@ -809,14 +1251,15 @@ def add_event_details(request, *args, **kwargs):
         if not form.is_valid():
             return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": form.errors})
 
+        cleaned = form.cleaned_data
         data_dict = {
             'patient_id': patient_id,
-            'specific_event': decoded_body.get('specific_event'),
-            'organ_space_site': decoded_body.get('organ_space_site'),
-            'detected': decoded_body.get('detected'),
-            'sample_types': decoded_body.get('sample_types'),
-            'site_of_sample_collection': decoded_body.get('site_of_sample_collection'),
-            'secondary_bsi_contributed': decoded_body.get('secondary_bsi_contributed'),
+            'specific_event': cleaned['specific_event'],
+            'organ_space_site': cleaned['organ_space_site'],
+            'detected': cleaned['detected'],
+            'sample_types': cleaned['sample_types'],
+            'site_of_sample_collection': cleaned['site_of_sample_collection'],
+            'secondary_bsi_contributed': cleaned['secondary_bsi_contributed'],
         }
 
         insert_event = cls_nurse._add_event_details(LOG_PREFIX, data=data_dict)
@@ -831,11 +1274,61 @@ def add_event_details(request, *args, **kwargs):
             return JsonResponse({"status": "SUCCESS", "statuscode": 200, "msg": "All forms submitted successfully!"})
         else:
             return JsonResponse({
-                "status": "SUCCESS", "statuscode": 200, "msg": "Final form submitted. Waiting for other forms."})
+                "status": "SUCCESS", "statuscode": 200, "msg": "Final form submitted. Waiting for other forms."
+            })
 
     except Exception as e:
         log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
         return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
+
+
+# WORKING VIEWWW
+# @csrf_exempt
+# @require_http_methods(["POST"])
+# def add_event_details(request, *args, **kwargs):
+#     EVENT = "AddEventDetails"
+#     IP = client_ip(request)
+#     LOG_PREFIX = f'"EventName":"{EVENT}", "IP":"{IP}"'
+#     cls_nurse = Nurse()
+#
+#     try:
+#         patient_id = request.session.get('patient_id')
+#         if not patient_id:
+#             return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": "Patient ID not found in session!"})
+#
+#         decoded_body = json.loads(request.body.decode())
+#         form = EventDetailForm(decoded_body)
+#
+#         if not form.is_valid():
+#             return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": form.errors})
+#
+#         data_dict = {
+#             'patient_id': patient_id,
+#             'specific_event': decoded_body.get('specific_event'),
+#             'organ_space_site': decoded_body.get('organ_space_site'),
+#             'detected': decoded_body.get('detected'),
+#             'sample_types': decoded_body.get('sample_types'),
+#             'site_of_sample_collection': decoded_body.get('site_of_sample_collection'),
+#             'secondary_bsi_contributed': decoded_body.get('secondary_bsi_contributed'),
+#         }
+#
+#         insert_event = cls_nurse._add_event_details(LOG_PREFIX, data=data_dict)
+#         if not insert_event:
+#             return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Failed to add event details!"})
+#
+#         request.session['form6_completed'] = True
+#         request.session.modified = True
+#
+#         if all_forms_completed(request.session):
+#             request.session.flush()
+#             return JsonResponse({"status": "SUCCESS", "statuscode": 200, "msg": "All forms submitted successfully!"})
+#         else:
+#             return JsonResponse({
+#                 "status": "SUCCESS", "statuscode": 200, "msg": "Final form submitted. Waiting for other forms."})
+#
+#     except Exception as e:
+#         log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
+#         return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error!"})
 
 
 def all_forms_completed(session):

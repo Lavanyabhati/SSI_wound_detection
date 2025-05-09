@@ -32,26 +32,48 @@ SPECIFIC_EVENT_CHOICES = [
     ('OS', 'Organ/Space (specify site)'),
 ]
 
+# MICROORGANISM_CHOICES = [
+#     ('E coli', 'E coli'),
+#     ('Klebsiella pneumoniae', 'Klebsiella pneumoniae'),
+#     ('Enterococcus faecium', 'Enterococcus faecium'),
+#     ('Enterococcus faecalis', 'Enterococcus faecalis'),
+#     ('Staphylococcus haemolyticus', 'Staphylococcus haemolyticus'),
+#     ('Skin commensal flora', 'Skin commensal flora'),
+#     ('Pseudomonas aeruginosa', 'Pseudomonas aeruginosa'),
+#     ('Staphylococcus aureus (MRSA)', 'Staphylococcus aureus (MRSA)'),
+#     ('Staphylococcus aureus (MSSA)', 'Staphylococcus aureus (MSSA)'),
+#     ('CONS', 'CONS'),
+#     ('Acinetobacter baumanii', 'Acinetobacter baumanii'),
+#     ('Citrobacter koseri', 'Citrobacter koseri'),
+#     ('Citrobacter freundii', 'Citrobacter freundii'),
+#     ('Enterobacter cloacae', 'Enterobacter cloacae'),
+#     ('Enterobacter aerogenes', 'Enterobacter aerogenes'),
+#     ('Proteus mirabilis', 'Proteus mirabilis'),
+#     ('Morganella morganii', 'Morganella morganii'),
+#     ('Others', 'Others'),
+# ]
+
 MICROORGANISM_CHOICES = [
-    ('E coli', 'E coli'),
-    ('Klebsiella pneumoniae', 'Klebsiella pneumoniae'),
-    ('Enterococcus faecium', 'Enterococcus faecium'),
-    ('Enterococcus faecalis', 'Enterococcus faecalis'),
-    ('Staphylococcus haemolyticus', 'Staphylococcus haemolyticus'),
-    ('Skin commensal flora', 'Skin commensal flora'),
-    ('Pseudomonas aeruginosa', 'Pseudomonas aeruginosa'),
-    ('Staphylococcus aureus (MRSA)', 'Staphylococcus aureus (MRSA)'),
-    ('Staphylococcus aureus (MSSA)', 'Staphylococcus aureus (MSSA)'),
+    ('E COLI', 'E COLI'),
+    ('KLEBSIELLA PNEUMONIAE', 'KLEBSIELLA PNEUMONIAE'),
+    ('ENTEROCOCCUS FAECIUM', 'ENTEROCOCCUS FAECIUM'),
+    ('ENTEROCOCCUS FAECALIS', 'ENTEROCOCCUS FAECALIS'),
+    ('STAPHYLOCOCCUS HAEMOLYTICUS', 'STAPHYLOCOCCUS HAEMOLYTICUS'),
+    ('SKIN COMMENSAL FLORA', 'SKIN COMMENSAL FLORA'),
+    ('PSEUDOMONAS AERUGINOSA', 'PSEUDOMONAS AERUGINOSA'),
+    ('STAPHYLOCOCCUS AUREUS (MRSA)', 'STAPHYLOCOCCUS AUREUS (MRSA)'),
+    ('STAPHYLOCOCCUS AUREUS (MSSA)', 'STAPHYLOCOCCUS AUREUS (MSSA)'),
     ('CONS', 'CONS'),
-    ('Acinetobacter baumanii', 'Acinetobacter baumanii'),
-    ('Citrobacter koseri', 'Citrobacter koseri'),
-    ('Citrobacter freundii', 'Citrobacter freundii'),
-    ('Enterobacter cloacae', 'Enterobacter cloacae'),
-    ('Enterobacter aerogenes', 'Enterobacter aerogenes'),
-    ('Proteus mirabilis', 'Proteus mirabilis'),
-    ('Morganella morganii', 'Morganella morganii'),
-    ('Others', 'Others'),
+    ('ACINETOBACTER BAUMANII', 'ACINETOBACTER BAUMANII'),
+    ('CITROBACTER KOSERI', 'CITROBACTER KOSERI'),
+    ('CITROBACTER FREUNDII', 'CITROBACTER FREUNDII'),
+    ('ENTEROBACTER CLOACAE', 'ENTEROBACTER CLOACAE'),
+    ('ENTEROBACTER AEROGENES', 'ENTEROBACTER AEROGENES'),
+    ('PROTEUS MIRABILIS', 'PROTEUS MIRABILIS'),
+    ('MORGANELLA MORGANII', 'MORGANELLA MORGANNII'),
+    ('OTHERS', 'OTHERS'),
 ]
+
 
 ANTIBIOTIC_CHOICES = [
     ('Amoxicillin-clavulanic acid', 'Amoxicillin-clavulanic acid'),
@@ -76,7 +98,7 @@ ANTIBIOTIC_CHOICES = [
     ('Gentamicin', 'Gentamicin'),
     ('Tetracycline', 'Tetracycline'),
     ('Clindamycin', 'Clindamycin'),
-    ('Vancomycin E STRIP', 'Vancomycin E STRIP'),
+    ('Vancomycin', 'Vancomycin'),
     ('Linezolid', 'Linezolid'),
     ('Teicoplanin', 'Teicoplanin'),
     ('Nitrofurantoin', 'Nitrofurantoin'),
@@ -422,7 +444,7 @@ class NurseForm(forms.Form):
 class NurseUpdateForm(forms.Form):
     name = forms.CharField(max_length=100, label="Employee Name", required=True)
     email = forms.EmailField(max_length=100, label="Employee Name", required=True)
-    gender = forms.ChoiceField(choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')], label="Employee Name", required=True)
+    gender = forms.ChoiceField(choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')],  label="Employee Name", required=True)
     department = forms.ChoiceField(choices=DEPARTMENT_CHOICES,label="Employee Department", required=True)
     date_of_birth = forms.DateField(required=True, widget=forms.DateInput(attrs={'type': 'date'}), label="Date of Birth")
 
@@ -436,13 +458,13 @@ class PatientAdministrationForm(forms.Form):
     dateOfProcedure = forms.DateField(label="Date of Operative Procedure", widget=forms.SelectDateWidget(),required=True)
     patientOnSteroids = forms.ChoiceField(choices=[('yes', 'Yes'), ('no', 'No')], label="Patient on Steroids",required=True)
     diabeticPatient = forms.ChoiceField(choices=[('no', 'No'), ('high','High'), ('low', 'Low')], label="Patient Diabetic",required=True)
-    weight = forms.IntegerField(label="Weight", required=True)
-    height = forms.IntegerField(label="Height", required=True)
+    bmi = forms.IntegerField(label="bmi", min_value=0)
+    # height = forms.IntegerField(label="height", required=True)
     alcoholConsumption = forms.ChoiceField(choices=[('yes', 'Yes'), ('no', 'No')], label="Patient is a regular alcohol consumer",required=True)
     tobaccoConsumption = forms.ChoiceField(choices=[('yes', 'Yes'), ('no', 'No')], label="Patient is a regular tobacco consumer",required=True)
     lengthOfSurgery = forms.IntegerField(label="Length of Surgery", required=True)
     admittingDepartment = forms.ChoiceField(choices=DEPARTMENT_CHOICES, label="Admitting Department", required=True)
-    departmentPrimarySurgeon = forms.ChoiceField(choices=DOCTOR_CHOICES, label="Department (Primary Surgeon)", required=True)
+    departmentPrimarySurgeon = forms.ChoiceField(choices=DEPARTMENT_CHOICES, label="Department (Primary Surgeon)", required=True)
     procedureName = forms.ChoiceField(choices=PROCEDURE_NAME_CHOICES, label="Name of the Procedure", required=True)
     diagnosis = forms.CharField(widget=forms.Textarea, label="Diagnosis",required=True)
     procedureDoneBy = forms.ChoiceField(choices=DOCTOR_CHOICES, label="Procedure done by (Primary Surgeon)",required=True)

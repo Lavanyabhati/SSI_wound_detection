@@ -37,6 +37,37 @@ class JrDoctor:
             log.error(f'{LOG_PREFIX}, "Action":{ACTION}, "MobileNo":"{phone_number}", "Result":"Failure", "Reason":"{e}"')
             return success, None
 
+    def _register_jr_doctor(self, LOG_PREFIX, data):
+        try:
+            employee_id = data.get('employee_id')
+            phone_number = data.get('phone_number', '')
+            name = data.get('name', '')
+            email = data.get('email', '')
+            gender = data.get('gender', '')
+            department = data.get('department', '')
+            date_of_birth = data.get('date_of_birth', '')
+
+            data_dict = {
+                'name': name,
+                'email': email,
+                'gender': gender,
+                'employee_id': employee_id,
+                'phone_number': phone_number,
+                'department': department,
+                'date_of_birth': date_of_birth,
+                'created_at': datetime.now(),
+                'updated_at': datetime.now(),
+            }
+
+            register_jr_doctor = self.db_jr_doctor._insert(data=data_dict)
+            print("Junior Doctor Data saved successfully!")
+            return True if register_jr_doctor.inserted_id else False
+
+        except Exception as e:
+            log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
+            return None
+
+
     def _add_jr_doctor(self, LOG_PREFIX ,data):
         try:
             employee_id = data.get('employee_id')

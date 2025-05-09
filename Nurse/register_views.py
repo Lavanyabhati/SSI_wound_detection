@@ -156,8 +156,8 @@ class Nurse:
             gender = data.get('gender')
             patientOnSteroids = data.get('patientOnSteroids')
             diabeticPatient = data.get('diabeticPatient')
-            weight = data.get('weight')
-            height = data.get('height')
+            # weight = data.get('weight')
+            # height = data.get('height')
             bmi = data.get('bmi')
             alcoholConsumption = data.get('alcoholConsumption')
             tobaccoConsumption = data.get('tobaccoConsumption')
@@ -185,8 +185,8 @@ class Nurse:
                 'gender': gender,
                 'patientOnSteroids': patientOnSteroids,
                 'diabeticPatient': diabeticPatient,
-                'weight': weight,
-                'height': height,
+                # 'weight': weight,
+                # 'height': height,
                 'bmi': bmi,
                 'alcoholConsumption': alcoholConsumption,
                 'tobaccoConsumption': tobaccoConsumption,

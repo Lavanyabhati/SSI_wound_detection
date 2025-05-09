@@ -40,12 +40,12 @@ def otp(request):
             token_scope = TOKEN_SCOPE_NURSE
             prefix = "N_"
             cls_nurse = Nurse()
-        elif "jrdoctor" in uri:
+        elif "junior_doctor" in uri:
             user_type = "jrdoctor"
             token_scope = TOKEN_SCOPE_JR_DOCTOR
             prefix = "J_"
             cls_nurse = JrDoctor()
-        elif "srdoctor" in uri:
+        elif "senior_doctor" in uri:
             user_type = "srdoctor"
             token_scope = TOKEN_SCOPE_SR_DOCTOR
             prefix = "S_"

@@ -1,4 +1,6 @@
 from configuration import *
+from datetime import date, datetime, time
+from decimal import Decimal
 
 
 class DBOperation:
@@ -52,17 +54,75 @@ class DBOperation:
             log.error("Exception in DBOperation.FindOne(). Reason:%s" % e)
             return None
 
+    def _convert_dates(self, obj):
+        if isinstance(obj, dict):
+            new_obj = {}
+            for k, v in obj.items():
+                new_obj[k] = self._convert_dates(v)
+            return new_obj
+        elif isinstance(obj, list):
+            return [self._convert_dates(item) for item in obj]
+        elif isinstance(obj, date) and not isinstance(obj, datetime):
+            return datetime.combine(obj, datetime.min.time())
+        elif isinstance(obj, time):
+            return obj.strftime('%H:%M:%S')  # Converts time object to string
+        elif isinstance(obj, Decimal):
+            return float(obj)
+        return obj
+
     def _insert(self, data, upsert_filter=None):
         try:
             db = self.db
+            data = self._convert_dates(data)
+
             if upsert_filter:
                 insert = db[self.coll_name].update_one(upsert_filter, {'$set': data}, upsert=True)
             else:
                 insert = db[self.coll_name].insert_one(data)
             return insert
         except Exception as e:
-            log.error("Exception in DBOperation.Insert(). Reason:%s" % e)
+            log.error("Exception in DBOperation.Insert(). Reason: %s" % e)
             return None
+
+
+# WORKKKINGGG
+    # def _convert_dates(self, obj):
+    #     if isinstance(obj, dict):
+    #         new_obj = {}
+    #         for k, v in obj.items():
+    #             new_obj[k] = self._convert_dates(v)
+    #         return new_obj
+    #     elif isinstance(obj, list):
+    #         return [self._convert_dates(item) for item in obj]
+    #     elif isinstance(obj, date) and not isinstance(obj, datetime):
+    #         return datetime.combine(obj, datetime.min.time())
+    #     return obj
+    #
+    # def _insert(self, data, upsert_filter=None):
+    #     try:
+    #         db = self.db
+    #         data = self._convert_dates(data)
+    #
+    #         if upsert_filter:
+    #             insert = db[self.coll_name].update_one(upsert_filter, {'$set': data}, upsert=True)
+    #         else:
+    #             insert = db[self.coll_name].insert_one(data)
+    #         return insert
+    #     except Exception as e:
+    #         log.error("Exception in DBOperation.Insert(). Reason: %s" % e)
+    #         return None
+
+    # def _insert(self, data, upsert_filter=None):
+    #     try:
+    #         db = self.db
+    #         if upsert_filter:
+    #             insert = db[self.coll_name].update_one(upsert_filter, {'$set': data}, upsert=True)
+    #         else:
+    #             insert = db[self.coll_name].insert_one(data)
+    #         return insert
+    #     except Exception as e:
+    #         log.error("Exception in DBOperation.Insert(). Reason:%s" % e)
+    #         return None
 
     def _update(self, filter_q, update_data, upsert=None, multi_ops=None):
         try:

@@ -69,15 +69,14 @@ def update_sr_doctor_details(request, *args, **kwargs):
         log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"{e}"')
         return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Internal Server Error"})
 
-
 @csrf_exempt
 @require_http_methods(["POST"])
-# @verify_auth_token
 def add_srDoctor_details(request, *args, **kwargs):
     EVENT = "AddJrDoctorDetails"
     IP = client_ip(request)
     LOG_PREFIX = f'"EventName":"{EVENT}", "IP":"{IP}"'
     cls_nurse = SrDoctor()
+
     try:
         decoded_body = json.loads(request.body.decode())
         form = SrDoctorForm(decoded_body)
@@ -86,27 +85,24 @@ def add_srDoctor_details(request, *args, **kwargs):
             log.error(f'{LOG_PREFIX}, "Result":"Failure", "Reason":"Form validation failed", "Errors":{form.errors}')
             return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": form.errors})
 
-        phone_number = kwargs.get('phone_number')
-        employee_id = kwargs.get('employee_id')
-        if not phone_number or not employee_id:
-            return JsonResponse({"status": "FAILURE", "statuscode": 400, "msg": "Phone number and employee ID are required"})
-
+        employee_id = 'E_' + ''.join(random.choices('0123456789ABCDEF', k=16))
 
         data_dict = {
             'name': decoded_body.get('name'),
             'email': decoded_body.get('email'),
             'gender': decoded_body.get('gender'),
             'department': decoded_body.get('department'),
-            'phone_number': phone_number,
             'date_of_birth': decoded_body.get('date_of_birth'),
+            'phone_number': decoded_body.get('phone_number'),
+            'employee_id': employee_id,
         }
 
-        insert_jrdoctor = cls_nurse._add_sr_doctor(LOG_PREFIX, data=data_dict)
-        log.info(f"INSERT NURSE DETAILS : {insert_jrdoctor}")
+        insert_sr_doctor = cls_nurse._register_sr_doctor(LOG_PREFIX, data=data_dict)
+        log.info(f"INSERT JR DOCTOR DETAILS : {insert_sr_doctor}")
 
-        if insert_jrdoctor:
+        if insert_sr_doctor:
             return JsonResponse(
-                {"status": "SUCCESS", "statuscode": 200, "msg": "Senior Doctor details added successfully!"}
+                {"status": "SUCCESS", "statuscode": 200, "msg": "Senior Doctor details added successfully!", "employee_id": employee_id}
             )
         else:
             return JsonResponse({"status": "FAILURE", "statuscode": 500, "msg": "Failed to add Senior Doctor details!"})
